@@ -12,7 +12,7 @@
 #include "graphics/IndexBuffer.h"
 
 static const unsigned int CHUNK_SIZE = 64;
-static const unsigned int CHUNK_HEIGHT = 16;
+static const unsigned int CHUNK_HEIGHT = 32;
 
 class Chunk {
 public:
@@ -30,8 +30,6 @@ public:
 private:
     glm::vec3 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
-    std::vector<GLfloat> m_Vertices;
-    std::vector<GLuint> m_Indices;
     IndexBuffer *m_IndexBuffer;
     VertexBuffer *m_VertexBuffer;
     VertexArray *m_VertexArray;

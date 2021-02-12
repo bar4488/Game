@@ -71,5 +71,5 @@ glm::mat4 Player::GetViewProjection() const {
 
 glm::vec3 Player::GetCurrentChunkPosition()
 {
-    return glm::vec3((int)(m_Position.x / CHUNK_SIZE), (int)(m_Position.y / CHUNK_HEIGHT), (int)(m_Position.z / CHUNK_SIZE));
+    return glm::vec3(floor(m_Position.x / CHUNK_SIZE), floor(m_Position.y / CHUNK_HEIGHT), floor(m_Position.z / CHUNK_SIZE));
 }

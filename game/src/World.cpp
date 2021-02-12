@@ -13,13 +13,17 @@ World::World(Renderer* renderer, GameConfiguration* gameConf) :
 	m_Renderer(renderer),
 	m_ChunkCount(CalculateChunkCount(*gameConf)),
 	m_Chunks(new Chunk* [m_ChunkCount] {nullptr}),
-	//m_ChunkThread(&World::RunChunkLoader, this),
+	m_ChunkThread(&World::RunChunkLoader, this),
 	m_ShouldUpdateChunks(false),
 	m_Running(true),
 	m_LastChunkPosition(glm::vec3()),
 	m_CurrentChunk(m_Player.GetCurrentChunkPosition()),
 	m_ChunkCV()
 {
+	m_LastChunkPosition = m_Player.GetCurrentChunkPosition();
+	glm::vec3 startingChunk = m_LastChunkPosition - glm::vec3(m_GameConfiguration->chunkRenderDistance, m_GameConfiguration->chunkRenderHeight, m_GameConfiguration->chunkRenderDistance);
+	// first setup of chunks, initialize m_LastChunkPosition
+	// we want to create chunks from the closest to the player and away.
 	uint32_t chunkHeight = 1 + 2 * m_GameConfiguration->chunkRenderHeight,
 		chunkWidth = 1 + 2 * m_GameConfiguration->chunkRenderDistance;
 	GLuint* vao_array = new GLuint[m_ChunkCount];
@@ -28,22 +32,23 @@ World::World(Renderer* renderer, GameConfiguration* gameConf) :
 	glGenBuffers(m_ChunkCount, vb_array);
 	glGenBuffers(m_ChunkCount, ib_array);
 	glGenVertexArrays(m_ChunkCount, vao_array);
-	for (uint32_t z = 0; z < chunkWidth; z++)
+	for (int z = 0; z < chunkWidth; z++)
 	{
-		for (uint32_t y = 0; y < chunkHeight; y++)
+		for (int y = 0; y < chunkHeight; y++)
 		{
-			for (uint32_t x = 0; x < chunkWidth; x++)
+			for (int x = 0; x < chunkWidth; x++)
 			{
 				int i = x + y * chunkWidth + z * chunkWidth * chunkHeight;
 				m_Chunks[i] = 
-					new Chunk(glm::vec3(x, y, z), 
+					new Chunk(glm::vec3(startingChunk.x + x, startingChunk.y + y, startingChunk.z + z), 
 						new VertexArray(vao_array[i]),
 						new VertexBuffer(vb_array[i]), 
 						new IndexBuffer(ib_array[i]));
+				std::cout << "loaded chunk\n";
 			}
 		}
 	}
-
+	std::cout << "finished chunk loading!";
 }
 
 void World::Update()
@@ -73,32 +78,7 @@ void World::Draw()
 }
 
 void World::RunChunkLoader() {
-	glfwMakeContextCurrent(m_GameConfiguration->slaveWindow);
-	// first setup of chunks, initialize m_LastChunkPosition
-	// we want to create chunks from the closest to the player and away.
-	uint32_t chunkHeight = 1 + 2 * m_GameConfiguration->chunkRenderHeight,
-		chunkWidth = 1 + 2 * m_GameConfiguration->chunkRenderDistance;
-	GLuint* vao_array = new GLuint[m_ChunkCount];
-	GLuint* vb_array = new GLuint[m_ChunkCount];
-	GLuint* ib_array = new GLuint[m_ChunkCount];
-	glGenBuffers(m_ChunkCount, vb_array);
-	glGenBuffers(m_ChunkCount, ib_array);
-	glGenVertexArrays(m_ChunkCount, vao_array);
-	for (int z = 0; z < chunkWidth; z++)
-	{
-		for (int y = 0; y < chunkHeight; y++)
-		{
-			for (int x = 0; x < chunkWidth; x++)
-			{
-				int i = x + y * chunkWidth + z * chunkWidth * chunkHeight;
-				m_Chunks[i] = 
-					new Chunk(glm::vec3(x, y, z), 
-						new VertexArray(vao_array[i]),
-						new VertexBuffer(vb_array[i]), 
-						new IndexBuffer(ib_array[i]));
-			}
-		}
-	}
+
 	while (m_Running) {
 		//aquire the lock, check if we should update chunks, and if not, wait untill we do.
 		glm::vec3 currentChunk;
@@ -108,6 +88,7 @@ void World::RunChunkLoader() {
 				m_ChunkCV.wait(lk);
 			}
 			currentChunk = m_CurrentChunk;
+			m_ShouldUpdateChunks = false;
 		}
 		uint32_t chunkDist = m_GameConfiguration->chunkRenderDistance, 
 			chunkHeight = m_GameConfiguration->chunkRenderHeight;
@@ -124,10 +105,13 @@ void World::RunChunkLoader() {
 				// chunk is out side of render area.
 				// if the chunk at position 'p' relativly to the player last position is now out of render area,
 				// the chunk at position '-p' relativly to the player current  position must be in the render area.
-				chunk->LoadPosition(currentChunk - (chunkPos - m_LastChunkPosition));
+				glm::vec3 reversed = currentChunk - (chunkPos - m_LastChunkPosition);
+				reversed.y = chunkPos.y;
+				chunk->LoadPosition(reversed);
 			}
 		}
 		m_LastChunkPosition = currentChunk;
+		std::cout << "finished chunk calculation!\n";
 		// finished recalculating chunks!
 	}
 	// save and close

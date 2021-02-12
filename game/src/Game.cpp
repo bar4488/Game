@@ -31,7 +31,7 @@ Game::Game(int width, int height) :
 	m_TicksPerSecond(60),
 	m_Window(SetupGraphics()),
 	m_Renderer(width, height),
-	m_Configuration{0u,0u,width,height,m_Window}
+	m_Configuration{2u,1u,width,height,m_Window}
 {
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 	GLFWwindow* slaveWindow = glfwCreateWindow(1, 1, "", NULL, m_Window);
@@ -134,8 +134,8 @@ GLFWwindow* Game::SetupGraphics() {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glEnable(GL_CULL_FACE);
 

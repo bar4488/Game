@@ -21,5 +21,5 @@ void main(){
 
     vec4 texColor = texture(tex, v_texCoords);
     vec4 result = vec4(ambient + diffuse, 1.0) * texColor;
-    color = texColor;
+    color = result;
 }
