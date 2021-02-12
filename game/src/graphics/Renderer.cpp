@@ -26,7 +26,7 @@ Renderer::Renderer(int width, int height) :
 
 glm::mat4 view;
 void Renderer::BeginDraw(glm::mat4 View) {
-	View = view;
+	view = View;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void Renderer::DrawChunk(Chunk& chunk) {
@@ -38,10 +38,10 @@ void Renderer::DrawChunk(Chunk& chunk) {
 
 	m_BlockShader.Bind();
 	m_Textures[1]->Bind(0);
+	m_BlockShader.SetUniform1i("tex", 0);
 	m_BlockShader.SetUniformMatrix4fv("VP", 1, GL_FALSE, &vp[0][0]);
 	m_BlockShader.SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
 	m_BlockShader.SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
-	m_BlockShader.SetUniform1i("tex", 0);
 	m_BlockShader.SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
 	chunk.Bind();
 	glDrawElements(GL_TRIANGLES, chunk.GetIndicesCount(), GL_UNSIGNED_INT, nullptr);

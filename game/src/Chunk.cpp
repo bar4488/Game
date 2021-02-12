@@ -24,7 +24,7 @@ Chunk::Chunk(glm::vec3 position, VertexArray *vao, VertexBuffer *vb, IndexBuffer
 	for (auto& x : m_ChunkData) {
 		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
 			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				x[y][z] = rand() % 2;
+				x[y][z] = 1;
 			}
 		}
 	}
@@ -217,7 +217,7 @@ void Chunk::CalculateIndices() {
 					m_Vertices.reserve(m_Vertices.size() + 20);
 					AppendVertices(m_Vertices, 16 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
 				}
-			if (y == CHUNK_SIZE - 1 || m_ChunkData[x][y + 1][z] == 0) {
+			if (y == CHUNK_HEIGHT - 1 || m_ChunkData[x][y + 1][z] == 0) {
 					// Add up side.
 					AppendIndices(m_Indices, m_Vertices.size() / VERTEX_SIZE, &up_indices[0]);
 					m_Vertices.reserve(m_Vertices.size() + 20);
@@ -267,7 +267,7 @@ glm::vec3 Chunk::GetPositionWorldSpace()
 void Chunk::Bind()
 {
 	m_VertexArray->Bind();
-	//m_VertexBuffer->Bind();
+	m_VertexBuffer->Bind();
 	m_IndexBuffer->Bind();
 }
 

@@ -17,7 +17,8 @@ World::World(Renderer* renderer, GameConfiguration* gameConf) :
 	m_ShouldUpdateChunks(false),
 	m_Running(true),
 	m_LastChunkPosition(glm::vec3()),
-	m_CurrentChunk(m_Player.GetCurrentChunkPosition())
+	m_CurrentChunk(m_Player.GetCurrentChunkPosition()),
+	m_ChunkCV()
 {
 	uint32_t chunkHeight = 1 + 2 * m_GameConfiguration->chunkRenderHeight,
 		chunkWidth = 1 + 2 * m_GameConfiguration->chunkRenderDistance;
@@ -27,11 +28,11 @@ World::World(Renderer* renderer, GameConfiguration* gameConf) :
 	glGenBuffers(m_ChunkCount, vb_array);
 	glGenBuffers(m_ChunkCount, ib_array);
 	glGenVertexArrays(m_ChunkCount, vao_array);
-	for (int z = 0; z < chunkWidth; z++)
+	for (uint32_t z = 0; z < chunkWidth; z++)
 	{
-		for (int y = 0; y < chunkHeight; y++)
+		for (uint32_t y = 0; y < chunkHeight; y++)
 		{
-			for (int x = 0; x < chunkWidth; x++)
+			for (uint32_t x = 0; x < chunkWidth; x++)
 			{
 				int i = x + y * chunkWidth + z * chunkWidth * chunkHeight;
 				m_Chunks[i] = 
@@ -49,11 +50,12 @@ void World::Update()
 {
 	// update the player
 	m_Player.Update(m_GameConfiguration->window, m_GameConfiguration->width, m_GameConfiguration->height);
-	glm::vec3 currPos = m_Player.GetCurrentChunkPosition();
-	if (currPos != m_CurrentChunk)
+	glm::vec3 pc = m_Player.GetCurrentChunkPosition();
+	if (pc != m_CurrentChunk)
 	{
+		std::cout << "Player has moved chunk! x:" << pc.x << " y:" << pc.y << " z:" << pc.z <<"\n";
 		std::unique_lock<std::mutex> lk(m_ChunksLock);
-		m_CurrentChunk = currPos;
+		m_CurrentChunk = pc;
 		m_ShouldUpdateChunks = true;
 		m_ChunkCV.notify_all();
 	}
