@@ -14,6 +14,7 @@
 #include <utility>
 #include "fstream"
 #include "iostream"
+#include "glm/vec3.hpp"
 
 class Shader {
 public:
@@ -33,6 +34,7 @@ public:
     void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
     void SetUniform3f(const std::string& name, float v0, float v1, float v2);
     void SetUniform1i(const std::string& name, int value);
+    void SetUniformVec3(const std::string& name, glm::vec3 v);
     void SetUniformMatrix4fv(const std::string& name, unsigned int count, bool transpose, float* matrix);
     int GetUniformLocation(const std::string& name);
 private:

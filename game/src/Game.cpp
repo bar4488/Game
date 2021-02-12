@@ -31,7 +31,7 @@ Game::Game(int width, int height) :
 	m_TicksPerSecond(60),
 	m_Window(SetupGraphics()),
 	m_Renderer(width, height),
-	m_Configuration{2u,1u,width,height,m_Window}
+	m_Configuration{1u,1u,width,height,m_Window}
 {
 }
 

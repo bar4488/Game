@@ -3,6 +3,7 @@
 //
 
 #include "Shader.h"
+#include "glm/vec3.hpp"
 
 Shader::Shader(std::string vertexPath, std::string fragmentPath)
         : m_RendererID(0), m_FragmentPath(std::move(fragmentPath)), m_VertexPath(std::move(vertexPath)) {
@@ -132,6 +133,10 @@ void Shader::SetUniform4f(const std::string &name, float v0, float v1, float v2,
 
 void Shader::SetUniform3f(const std::string &name, float v0, float v1, float v2) {
     glUniform3f(GetUniformLocation(name), v0, v1, v2);
+}
+
+void Shader::SetUniformVec3(const std::string &name, glm::vec3 v) {
+    glUniform3f(GetUniformLocation(name), v.x, v.y, v.z);
 }
 
 void Shader::SetUniformMatrix4fv(const std::string &name, unsigned int count, bool transpose, float *matrix) {

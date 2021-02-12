@@ -21,7 +21,7 @@ public:
 	Renderer(int width, int height);
 	~Renderer();
 
-	void BeginDraw(glm::mat4 View);
+	void BeginDraw(glm::mat4 View, glm::vec3 cameraPos);
 	void DrawChunk(Chunk& chunk);
 private:
 	int m_Width, m_Height;
