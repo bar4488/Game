@@ -33,9 +33,6 @@ Game::Game(int width, int height) :
 	m_Renderer(width, height),
 	m_Configuration{2u,1u,width,height,m_Window}
 {
-	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-	GLFWwindow* slaveWindow = glfwCreateWindow(1, 1, "", NULL, m_Window);
-	m_Configuration.slaveWindow = slaveWindow;
 }
 
 void Game::Run() {

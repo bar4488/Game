@@ -9,7 +9,6 @@ typedef struct {
     int width;
     int height;
     GLFWwindow* window;
-    GLFWwindow* slaveWindow;
 } GameConfiguration ;
 
 typedef struct {
