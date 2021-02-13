@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="ChunkLoader.cpp" />
     <ClCompile Include="src\Chunk.cpp" />
+    <ClCompile Include="src\constants.h" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\graphics\IndexBuffer.cpp" />
     <ClCompile Include="src\graphics\Renderer.cpp" />
@@ -465,6 +466,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\fragment.shader" />
+    <None Include="res\shaders\skybox_fragment.shader" />
+    <None Include="res\shaders\skybox_vertex.shader" />
     <None Include="res\shaders\vertex.shader" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />

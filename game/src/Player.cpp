@@ -73,3 +73,12 @@ glm::vec3 Player::GetCurrentChunkPosition() const
 {
     return glm::vec3(floor(m_Position.x / CHUNK_SIZE), floor(m_Position.y / CHUNK_HEIGHT), floor(m_Position.z / CHUNK_SIZE));
 }
+
+glm::vec3 Player::GetViewDirection() const
+{
+    return glm::vec3(
+            cos(m_Direction.y) * sin(m_Direction.x),
+            sin(m_Direction.y),
+            cos(m_Direction.y) * cos(m_Direction.x)
+    );
+}

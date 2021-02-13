@@ -68,13 +68,14 @@ void World::Update()
 
 void World::Draw()
 {
-	m_Renderer->BeginDraw(m_Player.GetViewProjection(), m_Player.m_Position);
+	m_Renderer->BeginDraw(m_Player.GetViewProjection(), m_Player.m_Position, m_Player.GetViewDirection());
 	for (size_t i = 0; i < m_ChunkCount; i++)
 	{
 		if (m_Chunks[i] != nullptr) {
 			m_Renderer->DrawChunk(*m_Chunks[i]);
 		}
 	}
+	m_Renderer->EndDraw(m_Player.GetViewDirection());
 }
 
 void World::RunChunkLoader() {

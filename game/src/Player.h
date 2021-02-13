@@ -16,6 +16,7 @@ public:
     void Update(GLFWwindow *window, int width, int height);
     glm::mat4 GetViewProjection() const;
     glm::vec3 GetCurrentChunkPosition() const;
+    glm::vec3 GetViewDirection() const;
     glm::vec3 m_Position;
     glm::vec2 m_Direction;
 private:

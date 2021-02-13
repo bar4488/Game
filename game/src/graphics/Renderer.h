@@ -21,11 +21,16 @@ public:
 	Renderer(int width, int height);
 	~Renderer();
 
-	void BeginDraw(glm::mat4 View, glm::vec3 cameraPos);
+	void BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDir);
+	void EndDraw(glm::vec3 cameraDir);
 	void DrawChunk(Chunk& chunk);
 private:
 	int m_Width, m_Height;
 	Shader m_BlockShader;
+	Shader m_SkyboxShader;
+	VertexArray m_SkyboxVAO;
+	VertexBuffer m_SkyboxVB;
+	IndexBuffer m_SkyboxIB;
 	std::unordered_map<int, Texture*> m_Textures;
 };
 
