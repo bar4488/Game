@@ -277,7 +277,7 @@ void Chunk::CalculateIndices() {
 	}
 	VertexBufferLayout vl;
 	m_VertexBuffer->SetData(&v_vertices.front(), sizeof(float) * v_vertices.size(), GL_DYNAMIC_DRAW);
-	m_IndexBuffer->SetData(&v_indices.front(), v_indices.size(), GL_DYNAMIC_DRAW);
+	m_IndexBuffer->SetData(&v_indices.front(), v_indices.size(), sizeof(unsigned int), GL_DYNAMIC_DRAW);
 	vl.Push<float>(3, 0);
 	vl.Push<float>(2, 2);
 	vl.Push<float>(3, 3);

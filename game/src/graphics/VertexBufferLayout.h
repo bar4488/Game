@@ -7,6 +7,7 @@
 
 #include "vector"
 #include "GL/glew.h"
+#include <iostream>
 
 struct VertexBufferElement {
     unsigned int type;
@@ -22,6 +23,8 @@ struct VertexBufferElement {
                 return sizeof(unsigned int);
             case GL_UNSIGNED_BYTE:
                 return sizeof(unsigned char);
+            case GL_BYTE:
+                return sizeof(char);
         }
     }
 };
@@ -36,6 +39,7 @@ public:
     template<typename T>
     void Push(unsigned int count, unsigned int location) {
         //ERROR
+        std::cerr << "VertexBufferLayout ERROR! unknown type!";
     }
 
     template<>
@@ -54,6 +58,12 @@ public:
     void Push<unsigned char>(unsigned int count, unsigned int location) {
         m_Elements.push_back({GL_UNSIGNED_BYTE, count, location, false});
         m_Stride += count * VertexBufferElement::GetSizeOfType(GL_UNSIGNED_BYTE);
+    }
+
+    template<>
+    void Push<char>(unsigned int count, unsigned int location) {
+        m_Elements.push_back({GL_BYTE, count, location, false});
+        m_Stride += count * VertexBufferElement::GetSizeOfType(GL_BYTE);
     }
 
     inline std::vector<VertexBufferElement> GetElement() const { return m_Elements; }

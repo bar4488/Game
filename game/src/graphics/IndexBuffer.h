@@ -13,12 +13,12 @@ private:
 	unsigned int m_RendererID;
 	unsigned int m_Count;
 public:
-	IndexBuffer(const void* data, unsigned int count, GLenum usage = GL_STATIC_DRAW);
+	IndexBuffer(const void* data, unsigned int count, unsigned int index_size, GLenum usage = GL_STATIC_DRAW);
 	IndexBuffer();
 	IndexBuffer(unsigned int rendererId);
 	~IndexBuffer();
 
-	void SetData(const void* data, unsigned int count, GLenum usage = GL_STATIC_DRAW);
+	void SetData(const void* data, unsigned int count, unsigned int index_size = sizeof(unsigned int), GLenum usage = GL_STATIC_DRAW);
 	void Bind() const;
 	void Unbind() const;
 	unsigned int GetCount() const;

@@ -29,12 +29,12 @@ Renderer::Renderer(int width, int height) :
 	m_Textures[1] = texture;
 
 	// TODO: initialize skybox buffers
-	m_SkyboxVB.SetData(&skybox_vertices[0], sizeof(GLfloat) * 6 * 24, GL_STATIC_DRAW);
-	m_SkyboxIB.SetData(&skybox_indices[0], 6 * 6, GL_STATIC_DRAW);
+	m_SkyboxVB.SetData(&skybox_vertices[0], sizeof(GLubyte) * 6 * 24, GL_STATIC_DRAW);
+	m_SkyboxIB.SetData(&skybox_indices[0], 6 * 6, sizeof(unsigned char));
 
 	VertexBufferLayout vb_layout;
-	vb_layout.Push<float>(3, 0);
-	vb_layout.Push<float>(3, 1);
+	vb_layout.Push<char>(3, 0);
+	vb_layout.Push<char>(3, 1);
 	
 	m_SkyboxVAO.AddBuffer(m_SkyboxVB, vb_layout);
 }
@@ -79,7 +79,7 @@ void Renderer::EndDraw(glm::vec3 cameraDir) {
 	m_SkyboxVAO.Bind();
 	m_SkyboxVB.Bind();
 	m_SkyboxIB.Bind();
-	glDrawElements(GL_TRIANGLES, m_SkyboxIB.GetCount(), GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, m_SkyboxIB.GetCount(), GL_UNSIGNED_BYTE, nullptr);
 
 	glDepthFunc(GL_LESS);
 	glEnable(GL_CULL_FACE);
