@@ -11,7 +11,7 @@
 #include "graphics/VertexBuffer.h"
 #include "graphics/IndexBuffer.h"
 
-static const unsigned int CHUNK_SIZE = 64;
+static const unsigned int CHUNK_SIZE = 16;
 static const unsigned int CHUNK_HEIGHT = 32;
 
 class Chunk {
