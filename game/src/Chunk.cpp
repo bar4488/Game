@@ -21,12 +21,29 @@ Chunk::Chunk(glm::vec3 position, VertexArray *vao, VertexBuffer *vb, IndexBuffer
 	m_IndexBuffer(ib),
 	m_VisibleBlocks()
 {
-	if (position.y != 0) return;
 	srand((unsigned)time(0));
 	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
 		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
 			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = rand() % 5 == 1 ? 1 : 0;
+				m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = rand() % 5 == 1 ? 1 : 0;
+			}
+		}
+	}
+
+	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
+			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
+				if (x == 0 || y == 0 || z == 0 || x == CHUNK_SIZE - 1 || y == CHUNK_HEIGHT - 1 || z == CHUNK_SIZE - 1 ||
+					m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x + (y + 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x + y * CHUNK_SIZE + (z + 1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x + y * CHUNK_SIZE + (z - 1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+					m_VisibleBlocks.push_back(x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT);
+				}
+
 			}
 		}
 	}
@@ -46,6 +63,24 @@ Chunk::Chunk(glm::vec3 position)
 		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
 			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
 				m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = rand() % 5 == 1 ? 1 : 0;
+			}
+		}
+	}
+
+	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
+			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
+				if (x == 0 || y == 0 || z == 0 || x == CHUNK_SIZE - 1 || y == CHUNK_HEIGHT - 1 || z == CHUNK_SIZE - 1 ||
+					m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x + (y + 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x + y * CHUNK_SIZE + (z + 1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
+					m_ChunkData[x + y * CHUNK_SIZE + (z - 1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+					m_VisibleBlocks.push_back(x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT);
+				}
+
 			}
 		}
 	}
@@ -198,48 +233,46 @@ void AppendIndices(std::vector<unsigned int>& indices, int offset, const GLuint*
 void Chunk::CalculateIndices() {
     std::vector<GLfloat> v_vertices;
     std::vector<GLuint> v_indices;
-	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
-		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
-			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
-				glm::mat4 Model = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));
-				if (x == 0 || m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-					// Add left side.
-					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &left_indices[0]);
-					v_vertices.reserve(v_vertices.size() + 20);
-					AppendVertices(v_vertices, 12 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
-				}
-				if (x == CHUNK_SIZE - 1 || m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-					// Add right side.
-					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &right_indices[0]);
-					v_vertices.reserve(v_vertices.size() + 20);
-					AppendVertices(v_vertices, 0, glm::vec3((float)x, (float)y, (float)z));
-				}
-				if (y == 0 || m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-					// Add down side.
-					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &down_indices[0]);
-					v_vertices.reserve(v_vertices.size() + 20);
-					AppendVertices(v_vertices, 16 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
-				}
-				if (y == CHUNK_HEIGHT - 1 || m_ChunkData[x + (y+1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-					// Add up side.
-					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &up_indices[0]);
-					v_vertices.reserve(v_vertices.size() + 20);
-					AppendVertices(v_vertices, 4 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
-				}
-				if (z == 0 || m_ChunkData[x + y * CHUNK_SIZE + (z-1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-					// Add backward side.
-					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &back_indices[0]);
-					v_vertices.reserve(v_vertices.size() + 20);
-					AppendVertices(v_vertices, 20 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
-				}
-				if (z == CHUNK_SIZE - 1 || m_ChunkData[x + y * CHUNK_SIZE + (z+1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-					// Add forward side.
-					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &front_indices[0]);
-					v_vertices.reserve(v_vertices.size() + 20);
-					AppendVertices(v_vertices, 8 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
-				}
-			}
+	for (auto &index : m_VisibleBlocks) {
+		auto x = index % CHUNK_SIZE;
+		auto y = (index / CHUNK_SIZE) % CHUNK_HEIGHT;
+		auto z = (index / (CHUNK_SIZE * CHUNK_HEIGHT)) % CHUNK_SIZE;
+		glm::mat4 Model = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));
+		if (x == 0 || m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+			// Add left side.
+			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &left_indices[0]);
+			v_vertices.reserve(v_vertices.size() + 20);
+			AppendVertices(v_vertices, 12 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
+		}
+		if (x == CHUNK_SIZE - 1 || m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+			// Add right side.
+			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &right_indices[0]);
+			v_vertices.reserve(v_vertices.size() + 20);
+			AppendVertices(v_vertices, 0, glm::vec3((float)x, (float)y, (float)z));
+		}
+		if (y == 0 || m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+			// Add down side.
+			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &down_indices[0]);
+			v_vertices.reserve(v_vertices.size() + 20);
+			AppendVertices(v_vertices, 16 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
+		}
+		if (y == CHUNK_HEIGHT - 1 || m_ChunkData[x + (y+1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+			// Add up side.
+			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &up_indices[0]);
+			v_vertices.reserve(v_vertices.size() + 20);
+			AppendVertices(v_vertices, 4 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
+		}
+		if (z == 0 || m_ChunkData[x + y * CHUNK_SIZE + (z-1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+			// Add backward side.
+			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &back_indices[0]);
+			v_vertices.reserve(v_vertices.size() + 20);
+			AppendVertices(v_vertices, 20 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
+		}
+		if (z == CHUNK_SIZE - 1 || m_ChunkData[x + y * CHUNK_SIZE + (z+1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+			// Add forward side.
+			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &front_indices[0]);
+			v_vertices.reserve(v_vertices.size() + 20);
+			AppendVertices(v_vertices, 8 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
 		}
 	}
 	VertexBufferLayout vl;

@@ -26,6 +26,7 @@ Renderer::Renderer(int width, int height) :
 
 glm::mat4 view;
 void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	view = View;
 	glm::mat4 Projection = glm::perspective(glm::radians(45.0f),
 		(float)m_Width / (float)m_Height, 0.1f,
@@ -39,7 +40,6 @@ void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos) {
 	m_BlockShader.SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
 	m_BlockShader.SetUniformVec3("viewPos", cameraPos);
 	m_BlockShader.SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void Renderer::DrawChunk(Chunk& chunk) {
 	glm::mat4 model = glm::translate(glm::mat4(1.0), chunk.GetPositionWorldSpace());
