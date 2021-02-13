@@ -312,6 +312,12 @@ void Chunk::Bind()
 	m_IndexBuffer->Bind();
 }
 
+void Chunk::Unbind()
+{
+	m_VertexArray->Unbind();
+	m_VertexBuffer->Unbind();
+	m_IndexBuffer->Unbind();
+}
 unsigned int Chunk::GetIndicesCount()
 {
 	return m_IndexBuffer->GetCount();

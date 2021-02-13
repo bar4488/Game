@@ -61,6 +61,7 @@ void Renderer::DrawChunk(Chunk& chunk) {
 	m_BlockShader.SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
 	chunk.Bind();
 	glDrawElements(GL_TRIANGLES, chunk.GetIndicesCount(), GL_UNSIGNED_INT, nullptr);
+	chunk.Unbind();
 }
 
 void Renderer::EndDraw(glm::vec3 cameraDir) {

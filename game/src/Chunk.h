@@ -25,6 +25,7 @@ public:
     glm::vec3 GetPositionChunkSpace();
     glm::vec3 GetPositionWorldSpace();
     void Bind();
+    void Unbind();
     ~Chunk();
 public:
     bool m_Active;

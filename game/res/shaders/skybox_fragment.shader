@@ -18,5 +18,5 @@ void main(){
 
     //vec4 result = vec4(ambient + diffuse + specular, 1.0) * vec4(0.2, 0.2, 0.8, 1.0);
     vec4 result = vec4(specular, 1.0) + vec4(0.2, 0.5, 0.8, 1.0);
-    color = vec4(specular, 1.0) + vec4(0.2, 0.5, 0.8, 1.0) + vec4(v_col, 1);
+    color = vec4(specular, 1.0) + vec4(0.2, 0.5, 0.8, 1.0) + normalize(vec4(v_col, 1)) / 4;
 }

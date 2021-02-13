@@ -10,6 +10,6 @@ out vec3 v_fragPos;
 
 void main(){
   gl_Position = (VP * vec4(position, 1.0)).xyww;
-  v_col = (normalize(position) + vec3(1,1,3)) / 4;
+  v_col = normalize(position) + vec3(1,1,3);
   v_fragPos = vec3(vec4(position, 1.0));
 }
