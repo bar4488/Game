@@ -20,6 +20,7 @@ public:
     explicit Chunk(glm::vec3 position, VertexArray *vao, VertexBuffer *vb, IndexBuffer *ib);
     unsigned int GetIndicesCount();
     void CalculateIndices();
+    void CalculateVisibleVertices();
     void LoadPosition(glm::vec3 position);
     glm::vec3 GetPositionChunkSpace();
     glm::vec3 GetPositionWorldSpace();
@@ -29,7 +30,8 @@ public:
     bool m_Active;
 private:
     glm::vec3 m_Position;
-    unsigned int m_ChunkData[CHUNK_SIZE][CHUNK_HEIGHT][CHUNK_SIZE];
+    unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
+    std::vector<uint32_t> m_VisibleBlocks;
     IndexBuffer *m_IndexBuffer;
     VertexBuffer *m_VertexBuffer;
     VertexArray *m_VertexArray;

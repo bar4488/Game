@@ -18,14 +18,15 @@ Chunk::Chunk(glm::vec3 position, VertexArray *vao, VertexBuffer *vb, IndexBuffer
 	: m_Position(position),
 	m_VertexArray(vao),
 	m_VertexBuffer(vb),
-	m_IndexBuffer(ib)
+	m_IndexBuffer(ib),
+	m_VisibleBlocks()
 {
 	if (position.y != 0) return;
 	srand((unsigned)time(0));
-	for (auto& x : m_ChunkData) {
+	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
 		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
 			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				x[y][z] = rand() % 5 == 1 ? 1 : 0;
+				m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = rand() % 5 == 1 ? 1 : 0;
 			}
 		}
 	}
@@ -41,10 +42,10 @@ Chunk::Chunk(glm::vec3 position)
 	m_IndexBuffer()
 {
 	srand((unsigned)time(0));
-	for (auto& x : m_ChunkData) {
+	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
 		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
 			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				x[y][z] = rand() % 2;
+				m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = rand() % 5 == 1 ? 1 : 0;
 			}
 		}
 	}
@@ -200,39 +201,39 @@ void Chunk::CalculateIndices() {
 	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
 		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
 			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				if (m_ChunkData[x][y][z] == 0) continue;
+				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
 				glm::mat4 Model = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));
-				if (x == 0 || m_ChunkData[x - 1][y][z] == 0) {
+				if (x == 0 || m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add left side.
 					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &left_indices[0]);
 					v_vertices.reserve(v_vertices.size() + 20);
 					AppendVertices(v_vertices, 12 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
 				}
-				if (x == CHUNK_SIZE - 1 || m_ChunkData[x + 1][y][z] == 0) {
+				if (x == CHUNK_SIZE - 1 || m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add right side.
 					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &right_indices[0]);
 					v_vertices.reserve(v_vertices.size() + 20);
 					AppendVertices(v_vertices, 0, glm::vec3((float)x, (float)y, (float)z));
 				}
-				if (y == 0 || m_ChunkData[x][y - 1][z] == 0) {
+				if (y == 0 || m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add down side.
 					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &down_indices[0]);
 					v_vertices.reserve(v_vertices.size() + 20);
 					AppendVertices(v_vertices, 16 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
 				}
-				if (y == CHUNK_HEIGHT - 1 || m_ChunkData[x][y + 1][z] == 0) {
+				if (y == CHUNK_HEIGHT - 1 || m_ChunkData[x + (y+1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add up side.
 					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &up_indices[0]);
 					v_vertices.reserve(v_vertices.size() + 20);
 					AppendVertices(v_vertices, 4 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
 				}
-				if (z == 0 || m_ChunkData[x][y][z - 1] == 0) {
+				if (z == 0 || m_ChunkData[x + y * CHUNK_SIZE + (z-1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add backward side.
 					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &back_indices[0]);
 					v_vertices.reserve(v_vertices.size() + 20);
 					AppendVertices(v_vertices, 20 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
 				}
-				if (z == CHUNK_SIZE - 1 || m_ChunkData[x][y][z + 1] == 0) {
+				if (z == CHUNK_SIZE - 1 || m_ChunkData[x + y * CHUNK_SIZE + (z+1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add forward side.
 					AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &front_indices[0]);
 					v_vertices.reserve(v_vertices.size() + 20);
@@ -248,6 +249,10 @@ void Chunk::CalculateIndices() {
 	vl.Push<float>(2, 2);
 	vl.Push<float>(3, 3);
 	m_VertexArray->AddBuffer(*m_VertexBuffer, vl);
+}
+
+void Chunk::CalculateVisibleVertices() {
+
 }
 
 void Chunk::LoadPosition(glm::vec3 position)
