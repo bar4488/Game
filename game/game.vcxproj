@@ -467,10 +467,12 @@
     <ClInclude Include="src\World.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shaders\fragment.shader" />
+    <None Include="res\shaders\block_fragment.shader" />
+    <None Include="res\shaders\block_vertex.shader" />
+    <None Include="res\shaders\crosshair_fragment.shader" />
+    <None Include="res\shaders\crosshair_vertex.shader" />
     <None Include="res\shaders\skybox_fragment.shader" />
     <None Include="res\shaders\skybox_vertex.shader" />
-    <None Include="res\shaders\vertex.shader" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
     <None Include="src\vendor\glm\detail\func_exponential.inl" />

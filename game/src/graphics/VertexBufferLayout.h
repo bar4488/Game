@@ -36,6 +36,11 @@ private:
 public:
     VertexBufferLayout();
 
+    void Clear() {
+        m_Stride = 0;
+        m_Elements.clear();
+    }
+
     template<typename T>
     void Push(unsigned int count, unsigned int location) {
         //ERROR

@@ -21,24 +21,30 @@ Renderer::Renderer(int width, int height) :
 	m_SkyboxVAO(),
 	m_SkyboxVB(),
 	m_SkyboxIB(),
+	m_CrosshairVAO(),
+	m_CrosshairVB(),
 	m_Width(width),
 	m_Height(height),
 	m_Frustum() {
 	Texture* texture = new Texture("res/textures/dirt.png");
 	m_Textures[1] = texture;
 
-	LoadProgram("block", "res/shaders/block_vertex.shader", "res/shaders/block_fragment.shader"),
-	LoadProgram("skybox", "res/shaders/skybox_vertex.shader", "res/shaders/skybox_fragment.shader"),
-	LoadProgram("crosshair", "res/shaders/skybox_vertex.shader", "res/shaders/skybox_fragment.shader"),
-	// TODO: initialize skybox buffers
-	m_SkyboxVB.SetData(&skybox_vertices[0], sizeof(GLubyte) * 6 * 24, GL_STATIC_DRAW);
-	m_SkyboxIB.SetData(&skybox_indices[0], 6 * 6, sizeof(unsigned char));
+	LoadProgram("block", "res/shaders/block_vertex.shader", "res/shaders/block_fragment.shader");
+	LoadProgram("skybox", "res/shaders/skybox_vertex.shader", "res/shaders/skybox_fragment.shader");
+	LoadProgram("crosshair", "res/shaders/crosshair_vertex.shader", "res/shaders/crosshair_fragment.shader");
 
 	VertexBufferLayout vb_layout;
+
+	m_SkyboxVB.SetData(&skybox_vertices[0], sizeof(skybox_vertices), GL_STATIC_DRAW);
+	m_SkyboxIB.SetData(&skybox_indices[0], 6 * 6, sizeof(unsigned char));
 	vb_layout.Push<char>(3, 0);
 	vb_layout.Push<char>(3, 1);
-	
 	m_SkyboxVAO.AddBuffer(m_SkyboxVB, vb_layout);
+
+	m_CrosshairVB.SetData(&crosshair_vertices, sizeof(crosshair_vertices), GL_STATIC_DRAW);
+	vb_layout.Clear();
+	vb_layout.Push<float>(2, 0);
+	m_CrosshairVAO.AddBuffer(m_CrosshairVB, vb_layout);
 }
 
 void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDir) {
@@ -95,6 +101,16 @@ void Renderer::EndDraw(glm::vec3 cameraDir) {
 
 	glDepthFunc(GL_LESS);
 	glEnable(GL_CULL_FACE);
+
+	glDisable(GL_DEPTH_TEST);
+	m_ProgramsMap["crosshair"]->Bind();
+	m_ProgramsMap["crosshair"]->SetUniform1f("width", m_Width);
+	m_ProgramsMap["crosshair"]->SetUniform1f("height", m_Height);
+	m_CrosshairVAO.Bind();
+	m_CrosshairVB.Bind();
+	glLineWidth(3.0f);
+	glDrawArrays(GL_LINES, 0, 4);
+	glEnable(GL_DEPTH_TEST);
 }
 
 Renderer::~Renderer() {

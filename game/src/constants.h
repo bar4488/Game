@@ -61,6 +61,14 @@ constexpr GLubyte skybox_indices[] = {
 	20,21,22,
 	20,23,21
 };
+
+constexpr GLfloat crosshair_vertices[] = {
+	0.0, -0.05, 
+	0.0, 0.05,
+	-0.05, 0.0, 
+	0.05, 0.0,
+};
+
 constexpr GLuint right_indices[] = {
 	0, 1, 2,
 	0, 2, 3,

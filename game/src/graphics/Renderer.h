@@ -32,6 +32,9 @@ private:
 	VertexArray m_SkyboxVAO;
 	VertexBuffer m_SkyboxVB;
 	IndexBuffer m_SkyboxIB;
+	VertexArray m_CrosshairVAO;
+	VertexBuffer m_CrosshairVB;
+	IndexBuffer m_CrosshairIB;
 	std::unordered_map<int, Texture*> m_Textures;
 	glm::mat4 m_Projection;
 	glm::mat4 m_View;
