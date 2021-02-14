@@ -10,11 +10,11 @@
 using namespace std;
 
 
-static const int width = 640;
-static const int height = 480;
+static const int width = 1920;
+static const int height = 1080;
 
 int main() {
-    Game game(1920, 1080);
+    Game game(width, height);
     game.Run();
 
     return 0;

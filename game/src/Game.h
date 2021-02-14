@@ -24,6 +24,7 @@ public:
 private:
     int m_Height, m_Width, m_TicksPerSecond;
     bool m_InGame;
+    bool m_Fullscreen;
     GLFWwindow *m_Window;
     World *world;
     Renderer m_Renderer;

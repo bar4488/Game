@@ -176,6 +176,11 @@ glm::vec3 Chunk::GetPositionWorldSpace()
 		Chunk::m_Position.z * CHUNK_SIZE);
 }
 
+unsigned int Chunk::GetVisibleBlocksCount()
+{
+	return m_VisibleBlocks.size();
+}
+
 void Chunk::Bind()
 {
 	m_VertexArray->Bind();

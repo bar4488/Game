@@ -25,10 +25,10 @@ public:
 	void BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDir);
 	void EndDraw(glm::vec3 cameraDir);
 	void DrawChunk(Chunk& chunk);
+	void LoadProgram(std::string name, std::string vertexPath, std::string fragmentPath);
 private:
+    std::unordered_map<std::string, Shader*> m_ProgramsMap;
 	int m_Width, m_Height;
-	Shader m_BlockShader;
-	Shader m_SkyboxShader;
 	VertexArray m_SkyboxVAO;
 	VertexBuffer m_SkyboxVB;
 	IndexBuffer m_SkyboxIB;

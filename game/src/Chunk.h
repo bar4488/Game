@@ -24,6 +24,7 @@ public:
     void LoadPosition(glm::vec3 position);
     glm::vec3 GetPositionChunkSpace();
     glm::vec3 GetPositionWorldSpace();
+    unsigned int GetVisibleBlocksCount();
     void Bind();
     void Unbind();
     ~Chunk();

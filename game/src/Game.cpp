@@ -28,10 +28,11 @@ static void error_callback(int error, const char* description);
 Game::Game(int width, int height) :
 	m_Width(width),
 	m_Height(height),
+	m_Fullscreen(false),
 	m_TicksPerSecond(60),
 	m_Window(SetupGraphics()),
 	m_Renderer(width, height),
-	m_Configuration{3u,1u,width,height,m_Window}
+	m_Configuration{1u,0u,width,height,m_Window}
 {
 }
 
@@ -55,10 +56,24 @@ void Game::Run() {
 
 		while (lag >= timestamp) {
 			glfwPollEvents();
-			int state = glfwGetKey(m_Window, GLFW_KEY_ESCAPE);
-			if (state == GLFW_PRESS) {
+			int escape_state = glfwGetKey(m_Window, GLFW_KEY_ESCAPE);
+			if (escape_state == GLFW_PRESS) {
 				glfwSetWindowShouldClose(m_Window, 1);
 			}
+			int f_state = glfwGetKey(m_Window, GLFW_KEY_F);
+			// TODO: implement keypress system
+			/*
+			if (f_state == GLFW_PRESS) {
+				if (m_Fullscreen) {
+					glfwSetWindowMonitor(m_Window, nullptr, 0,0,m_Width, m_Height, 60);
+					m_Fullscreen = false;
+				}
+				else {
+					glfwSetWindowMonitor(m_Window, glfwGetPrimaryMonitor(), 0,0,m_Width, m_Height, 60);
+					m_Fullscreen = true;
+				}
+			}
+			*/
 			world->Update();
 			lag = std::chrono::nanoseconds(0ns);
 		}
