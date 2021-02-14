@@ -150,6 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ChunkLoader.cpp" />
+    <ClCompile Include="src\graphics\Frustum.cpp" />
     <ClCompile Include="src\Chunk.cpp" />
     <ClCompile Include="src\constants.h" />
     <ClCompile Include="src\Game.cpp" />
@@ -168,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChunkLoader.h" />
+    <ClInclude Include="src\graphics\Frustum.h" />
     <ClInclude Include="src\Chunk.h" />
     <ClInclude Include="src\Configuration.h" />
     <ClInclude Include="src\Game.h" />

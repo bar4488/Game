@@ -24,7 +24,8 @@ Renderer::Renderer(int width, int height) :
 	m_SkyboxVB(),
 	m_SkyboxIB(),
 	m_Width(width),
-	m_Height(height) {
+	m_Height(height),
+	m_Frustum() {
 	Texture* texture = new Texture("res/textures/dirt.png");
 	m_Textures[1] = texture;
 
@@ -39,15 +40,14 @@ Renderer::Renderer(int width, int height) :
 	m_SkyboxVAO.AddBuffer(m_SkyboxVB, vb_layout);
 }
 
-glm::mat4 view;
 void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDir) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	view = View;
-	glm::mat4 Projection = glm::perspective(glm::radians(45.0f),
+	m_View = View;
+	m_Projection = glm::perspective(glm::radians(45.0f),
 		(float)m_Width / (float)m_Height, 0.1f,
 		2000.0f);
-	glm::mat4 model = glm::mat4(1.0);
-	glm::mat4 vp = Projection * View;
+	glm::mat4 vp = m_Projection * m_View;
+	m_Frustum = Frustum(vp);
 	m_BlockShader.Bind();
 	m_Textures[1]->Bind(0);
 	m_BlockShader.SetUniform1i("tex", 0);
@@ -57,18 +57,22 @@ void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDi
 	m_BlockShader.SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
 }
 void Renderer::DrawChunk(Chunk& chunk) {
-	glm::mat4 model = glm::translate(glm::mat4(1.0), chunk.GetPositionWorldSpace());
-	m_BlockShader.SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
-	chunk.Bind();
-	glDrawElements(GL_TRIANGLES, chunk.GetIndicesCount(), GL_UNSIGNED_INT, nullptr);
-	chunk.Unbind();
+	// frustum culling
+	// extract planes from mvp matrix
+	if (m_Frustum.CheckRect(chunk.GetPositionWorldSpace() + glm::vec3(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2), CHUNK_SIZE, CHUNK_HEIGHT)) {
+		glm::mat4 model = glm::translate(glm::mat4(1.0), chunk.GetPositionWorldSpace());
+		m_BlockShader.SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
+		chunk.Bind();
+		glDrawElements(GL_TRIANGLES, chunk.GetIndicesCount(), GL_UNSIGNED_INT, nullptr);
+		chunk.Unbind();
+	}
 }
 
 void Renderer::EndDraw(glm::vec3 cameraDir) {
 	glm::mat4 Projection = glm::perspective(glm::radians(45.0f),
 		(float)m_Width / (float)m_Height, 0.1f,
 		2000.0f);
-	glm::mat4 skybox_vp = Projection * glm::mat4(glm::mat3(view));
+	glm::mat4 skybox_vp = Projection * glm::mat4(glm::mat3(m_View));
 
 	glDepthFunc(GL_LEQUAL);
 	glDisable(GL_CULL_FACE);

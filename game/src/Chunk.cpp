@@ -13,6 +13,7 @@
 #include "graphics/VertexArray.h"
 #include "graphics/VertexBuffer.h"
 #include "graphics/IndexBuffer.h"
+#include "constants.h"
 
 Chunk::Chunk(glm::vec3 position, VertexArray *vao, VertexBuffer *vb, IndexBuffer *ib)
 	: m_Position(position),
@@ -90,137 +91,13 @@ Chunk::Chunk(glm::vec3 position)
 	CalculateIndices();
 }
 
-static constexpr GLfloat right_face[] = {
-	1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-	1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 0.0f, 0.33f, 0.0f,
-	1.0f, 1.0f, 0.0f, 0.33f, 1.0f,
-};
-static constexpr GLuint right_indices[] = {
-	0, 1, 2,
-	0, 2, 3,
-};
-static constexpr GLfloat up_face[] = {
-	// Up face 4-8
-	1.0f, 1.0f, 1.0f, 0.335f, 1.0f,
-	1.0f, 1.0f, 0.0f, 0.67f, 1.0f,
-	0.0f, 1.0f, 0.0f, 0.67f, 0.0f,
-	0.0f, 1.0f, 1.0f, 0.335f, 0.0f,
-};
-static constexpr GLuint up_indices[] = {
-	0, 1, 2,
-	0, 2, 3,
-};
-static constexpr GLfloat down_face[] = {
-	0.0f, 0.0f, 0.0f, 0.67f, 1.0f,
-	1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-	1.0f, 0.0f, 0.0f, 0.67f, 0.0f,
-	0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-};
-static constexpr GLuint down_indices[] = {
-	0, 2, 1,
-	0, 1, 3,
-};
-static constexpr GLfloat back_face[] = {
-	0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-	1.0f, 1.0f, 0.0f, 0.33f, 1.0f,
-	1.0f, 0.0f, 0.0f, 0.33f, 0.0f,
-	0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-};
-static constexpr GLuint back_indices[] = {
-	0, 1, 2,
-	0, 3, 1,
-};
-static constexpr GLfloat front_face[] = {
-	1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-	0.0f, 0.0f, 1.0f, 0.33f, 0.0f,
-	1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 1.0f, 0.33f, 1.0f,
-};
-static constexpr GLuint front_indices[] = {
-	0, 1, 2,
-	0, 3, 1,
-};
-static constexpr GLfloat left_face[] = {
-	0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 1.0f, 0.33f, 1.0f,
-	0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-	0.0f, 0.0f, 1.0f, 0.33f, 0.0f,
-};
-static constexpr GLuint left_indices[] = {
-	0, 1, 2,
-	0, 3, 1,
-};
-static constexpr GLfloat vertices[] = {
-	// Right face 0-4
-	1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 1.0f, 0.0f, 0.0f,1.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 0.0f, 0.33f, 0.0f,1.0f, 0.0f, 0.0f,
-	1.0f, 1.0f, 0.0f, 0.33f, 1.0f,1.0f, 0.0f, 0.0f,
-
-	// Up face 4-8
-	1.0f, 1.0f, 1.0f, 0.335f, 1.0f, 0.0f, 1.0f, 0.0f,
-	1.0f, 1.0f, 0.0f, 0.67f, 1.0f, 0.0f, 1.0f, 0.0f,
-	0.0f, 1.0f, 0.0f, 0.67f, 0.0f, 0.0f, 1.0f, 0.0f,
-	0.0f, 1.0f, 1.0f, 0.335f, 0.0f, 0.0f, 1.0f, 0.0f,
-
-	// Forward face 8-12
-	1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-	0.0f, 0.0f, 1.0f, 0.33f, 0.0f, 0.0f, 0.0f, 1.0f,
-	1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-	0.0f, 1.0f, 1.0f, 0.33f, 1.0f, 0.0f, 0.0f, 1.0f,
-
-	// Left face 12-16
-	0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 1.0f, 0.33f, 1.0f, -1.0f, 0.0f, 0.0f,
-	0.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.33f, 0.0f, -1.0f, 0.0f, 0.0f,
-
-	// Down face 16-20
-	0.0f, 0.0f, 0.0f, 0.67f, 1.0f, 0.0f, -1.0f, 0.0f,
-	1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f,
-	1.0f, 0.0f, 0.0f, 0.67f, 0.0f, 0.0f, -1.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f,
-
-
-	// Backward 20-24
-	0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
-	1.0f, 1.0f, 0.0f, 0.33f, 1.0f, 0.0f, 0.0f, -1.0f,
-	1.0f, 0.0f, 0.0f, 0.33f, 0.0f, 0.0f, 0.0f, -1.0f,
-	0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f,
-};
-
-#define VERTEX_SIZE 8
-
-static constexpr GLuint indices[] = {
-	// rf 0-6
-	0, 1, 2,
-	0, 2, 3,
-	// uf 6-12
-	4, 5, 6,
-	4, 6, 7,
-	// ff 12-18
-	8, 9, 10,
-	8, 11, 9,
-	// lf 18-24
-	12, 13, 14,
-	12, 15, 13,
-	// df 24-30
-	16, 18, 17,
-	16, 17, 19,
-	// bf 30-36
-	20,21,22,
-	20,23,21
-};
-
-void AppendVertices(std::vector<float> &face, int offset, glm::vec3 xyz) {
+void AppendVertices(std::vector<CubeVertex> &face, int index, glm::tvec3<unsigned char> xyz) {
 		for (int i = 0; i < 4; ++i) {
-			face.push_back(vertices[offset + VERTEX_SIZE * i] + (float)xyz.x);
-			face.push_back(vertices[offset + VERTEX_SIZE * i + 1] + (float)xyz.y);
-			face.push_back(vertices[offset + VERTEX_SIZE * i + 2] + (float)xyz.z);
-			for (int j = 3; j < 8; j++) {
-				face.push_back(vertices[offset + VERTEX_SIZE * i + j]);
-			}
+			face.push_back({
+					cube_vertices[index + i].position + xyz,
+					cube_vertices[index + i].uv,
+					cube_vertices[index + i].normal
+				});
 		}
 }
 void AppendIndices(std::vector<unsigned int>& indices, int offset, const GLuint* indxs) {
@@ -231,56 +108,50 @@ void AppendIndices(std::vector<unsigned int>& indices, int offset, const GLuint*
 }
 
 void Chunk::CalculateIndices() {
-    std::vector<GLfloat> v_vertices;
+	std::cout << sizeof(CubeVertex);
+    std::vector<CubeVertex> v_vertices;
     std::vector<GLuint> v_indices;
 	for (auto &index : m_VisibleBlocks) {
 		auto x = index % CHUNK_SIZE;
 		auto y = (index / CHUNK_SIZE) % CHUNK_HEIGHT;
 		auto z = (index / (CHUNK_SIZE * CHUNK_HEIGHT)) % CHUNK_SIZE;
-		glm::mat4 Model = glm::translate(glm::mat4(1.0), glm::vec3(x, y, z));
 		if (x == 0 || m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 			// Add left side.
-			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &left_indices[0]);
-			v_vertices.reserve(v_vertices.size() + 20);
-			AppendVertices(v_vertices, 12 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
+			AppendIndices(v_indices, v_vertices.size(), &left_indices[0]);
+			AppendVertices(v_vertices, 12, glm::tvec3<unsigned char>(x, y, z));
 		}
 		if (x == CHUNK_SIZE - 1 || m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 			// Add right side.
-			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &right_indices[0]);
-			v_vertices.reserve(v_vertices.size() + 20);
-			AppendVertices(v_vertices, 0, glm::vec3((float)x, (float)y, (float)z));
+			AppendIndices(v_indices, v_vertices.size(), &right_indices[0]);
+			AppendVertices(v_vertices, 0, glm::tvec3<unsigned char>(x, y, z));
 		}
 		if (y == 0 || m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 			// Add down side.
-			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &down_indices[0]);
-			v_vertices.reserve(v_vertices.size() + 20);
-			AppendVertices(v_vertices, 16 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
+			AppendIndices(v_indices, v_vertices.size(), &down_indices[0]);
+			AppendVertices(v_vertices, 16, glm::tvec3<unsigned char>(x, y, z));
 		}
 		if (y == CHUNK_HEIGHT - 1 || m_ChunkData[x + (y+1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 			// Add up side.
-			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &up_indices[0]);
-			v_vertices.reserve(v_vertices.size() + 20);
-			AppendVertices(v_vertices, 4 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
+			AppendIndices(v_indices, v_vertices.size(), &up_indices[0]);
+			AppendVertices(v_vertices, 4, glm::tvec3<unsigned char>(x, y, z));
 		}
 		if (z == 0 || m_ChunkData[x + y * CHUNK_SIZE + (z-1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 			// Add backward side.
-			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &back_indices[0]);
-			v_vertices.reserve(v_vertices.size() + 20);
-			AppendVertices(v_vertices, 20 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
+			AppendIndices(v_indices, v_vertices.size(), &back_indices[0]);
+			AppendVertices(v_vertices, 20, glm::tvec3<unsigned char>(x, y, z));
 		}
 		if (z == CHUNK_SIZE - 1 || m_ChunkData[x + y * CHUNK_SIZE + (z+1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 			// Add forward side.
-			AppendIndices(v_indices, v_vertices.size() / VERTEX_SIZE, &front_indices[0]);
-			v_vertices.reserve(v_vertices.size() + 20);
-			AppendVertices(v_vertices, 8 * VERTEX_SIZE, glm::vec3((float)x, (float)y, (float)z));
+			AppendIndices(v_indices, v_vertices.size(), &front_indices[0]);
+			AppendVertices(v_vertices, 8, glm::tvec3<unsigned char>(x, y, z));
 		}
 	}
 	VertexBufferLayout vl;
-	m_VertexBuffer->SetData(&v_vertices.front(), sizeof(float) * v_vertices.size(), GL_DYNAMIC_DRAW);
+	m_VertexBuffer->SetData(&v_vertices.front(), sizeof(CubeVertex) * v_vertices.size(), GL_DYNAMIC_DRAW);
 	m_IndexBuffer->SetData(&v_indices.front(), v_indices.size(), sizeof(unsigned int), GL_DYNAMIC_DRAW);
-	vl.Push<float>(3, 0);
-	vl.Push<float>(2, 2);
-	vl.Push<float>(3, 3);
+	vl.Push<unsigned char>(3, 0);
+	vl.Push<unsigned char>(2, 2);
+	vl.Push<char>(3, 3);
 	m_VertexArray->AddBuffer(*m_VertexBuffer, vl);
 }
 

@@ -12,6 +12,7 @@
 #include "IndexBuffer.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Frustum.h"
 
 #include <ft2build.h>
 #include <freetype/freetype.h>  
@@ -32,6 +33,10 @@ private:
 	VertexBuffer m_SkyboxVB;
 	IndexBuffer m_SkyboxIB;
 	std::unordered_map<int, Texture*> m_Textures;
+	glm::mat4 m_Projection;
+	glm::mat4 m_View;
+	glm::mat4 m_Model;
+	Frustum m_Frustum;
 };
 
 

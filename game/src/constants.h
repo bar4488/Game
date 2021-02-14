@@ -1,6 +1,8 @@
 #include "GL/glew.h"
+#include "glm/vec3.hpp"
+#include "glm/vec2.hpp"
 
-const GLbyte skybox_vertices[] = {
+constexpr GLbyte skybox_vertices[] = {
 	// Right face 0-4
 	1, 1, 1, 1, 0, 0,
 	1, -1, 1, 1, 0, 0,
@@ -59,3 +61,73 @@ constexpr GLubyte skybox_indices[] = {
 	20,21,22,
 	20,23,21
 };
+constexpr GLuint right_indices[] = {
+	0, 1, 2,
+	0, 2, 3,
+};
+constexpr GLuint up_indices[] = {
+	0, 1, 2,
+	0, 2, 3,
+};
+ constexpr GLuint down_indices[] = {
+	0, 2, 1,
+	0, 1, 3,
+};
+ constexpr GLuint back_indices[] = {
+	0, 1, 2,
+	0, 3, 1,
+};
+ constexpr GLuint front_indices[] = {
+	0, 1, 2,
+	0, 3, 1,
+};
+ constexpr GLuint left_indices[] = {
+	0, 1, 2,
+	0, 3, 1,
+};
+
+
+ struct CubeVertex {
+	 glm::tvec3<unsigned char> position;
+	 glm::tvec2<unsigned char> uv;
+	 glm::tvec3<char> normal;
+ };
+
+ constexpr CubeVertex cube_vertices[] = {
+	// Right face 0-4
+	{{1, 1, 1}, {0, 3}, {1, 0, 0}},
+	{{1, 0, 1}, {0, 0}, {1, 0, 0}},
+	{{1, 0, 0}, {1, 0}, {1, 0, 0}},
+	{{1, 1, 0}, {1, 3}, {1, 0, 0}},
+
+	// Up face 4-8
+	{{1, 1, 1}, {1, 3}, {0, 1, 0}},
+	{{1, 1, 0}, {2, 3}, {0, 1, 0}},
+	{{0, 1, 0}, {2, 0}, {0, 1, 0}},
+	{{0, 1, 1}, {1, 0}, {0, 1, 0}},
+
+	// Forward face 8-12
+	{{1, 1, 1}, {0, 3}, {0, 0, 1}},
+	{{0, 0, 1}, {1, 0}, {0, 0, 1}},
+	{{1, 0, 1}, {0, 0}, {0, 0, 1}},
+	{{0, 1, 1}, {1, 3}, {0, 0, 1}},
+
+	// Left face 12-16
+	{{0, 0, 0}, {0, 0}, {-1, 0, 0}},
+	{{0, 1, 1}, {1, 3}, {-1, 0, 0}},
+	{{0, 1, 0}, {0, 3}, {-1, 0, 0}},
+	{{0, 0, 1}, {1, 0}, {-1, 0, 0}},
+
+	// Down face 16-20
+	{{0, 0, 0}, {2, 3}, {0, -1, 0}},
+	{{1, 0, 1}, {3, 0}, {0, -1, 0}},
+	{{1, 0, 0}, {2, 0}, {0, -1, 0}},
+	{{0, 0, 1}, {3, 3}, {0, -1, 0}},
+
+
+	// Backward 20-24
+	{{0, 0, 0}, {0, 0}, {0, 0, -1}},
+	{{1, 1, 0}, {1, 3}, {0, 0, -1}},
+	{{1, 0, 0}, {1, 0}, {0, 0, -1}},
+	{{0, 1, 0}, {0, 3}, {0, 0, -1}},
+ };
