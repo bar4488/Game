@@ -10,9 +10,10 @@
 #include "graphics/VertexArray.h"
 #include "graphics/VertexBuffer.h"
 #include "graphics/IndexBuffer.h"
+#include "graphics/Renderer.h"
 
 static const unsigned int CHUNK_SIZE = 16;
-static const unsigned int CHUNK_HEIGHT = 32;
+static const unsigned int CHUNK_HEIGHT = 16;
 
 class Chunk {
 public:
@@ -24,6 +25,7 @@ public:
     void LoadPosition(glm::vec3 position);
     glm::vec3 GetPositionChunkSpace();
     glm::vec3 GetPositionWorldSpace();
+    glm::vec3 GetCenterWorldSpace();
     unsigned int GetVisibleBlocksCount();
     void Bind();
     void Unbind();
@@ -31,12 +33,15 @@ public:
 public:
     bool m_Active;
 private:
+    void Draw(Renderer* renderer);
+private:
     glm::vec3 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
     std::vector<uint32_t> m_VisibleBlocks;
-    IndexBuffer *m_IndexBuffer;
-    VertexBuffer *m_VertexBuffer;
-    VertexArray *m_VertexArray;
+    IndexBuffer m_IndexBuffer;
+    VertexBuffer m_VertexBuffer;
+    VertexArray m_VertexArray;
+    friend class ChunkManager;
 };
 
 

@@ -28,3 +28,11 @@ void World::Draw()
 World::~World() 
 {
 }
+
+void World::DrawSkybox()
+{
+}
+
+void World::DrawCrosshair()
+{
+}

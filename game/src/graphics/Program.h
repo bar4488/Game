@@ -1,10 +1,7 @@
 //
 // Created by bar44 on 10/30/2020.
 //
-
-#ifndef GOME_SHADER_H
-#define GOME_SHADER_H
-
+#pragma once
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -16,20 +13,20 @@
 #include "iostream"
 #include "glm/vec3.hpp"
 
-class Shader {
+class Program {
 public:
     unsigned int m_RendererID;
     std::unordered_map<std::string, int> m_UniformLocationCache;
 
-    Shader(std::string vertexPath, std::string fragmentPath);
+    Program(std::string vertexPath, std::string fragmentPath);
 
-    ~Shader();
+    ~Program();
 
     void Bind() const;
 
     void Unbind() const;
 
-    bool CompileShader();
+    bool CompileProgram();
     void SetUniform1f(const std::string& name, float value);
     void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
     void SetUniform3f(const std::string& name, float v0, float v1, float v2);
@@ -41,6 +38,3 @@ private:
     const std::string m_FragmentPath;
     const std::string m_VertexPath;
 };
-
-
-#endif //GOME_SHADER_H

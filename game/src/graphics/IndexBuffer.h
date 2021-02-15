@@ -12,16 +12,18 @@ class IndexBuffer {
 private:
 	unsigned int m_RendererID;
 	unsigned int m_Count;
+	unsigned int m_Type;
 public:
-	IndexBuffer(const void* data, unsigned int count, unsigned int index_size, GLenum usage = GL_STATIC_DRAW);
+	IndexBuffer(const void* data, unsigned int count, unsigned int type, GLenum usage = GL_STATIC_DRAW);
 	IndexBuffer();
 	IndexBuffer(unsigned int rendererId);
 	~IndexBuffer();
 
-	void SetData(const void* data, unsigned int count, unsigned int index_size = sizeof(unsigned int), GLenum usage = GL_STATIC_DRAW);
+	void SetData(const void* data, unsigned int count, unsigned int type = GL_UNSIGNED_INT, GLenum usage = GL_STATIC_DRAW);
 	void Bind() const;
 	void Unbind() const;
 	unsigned int GetCount() const;
+	unsigned int GetType() const;
 };
 
 

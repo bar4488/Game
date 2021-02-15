@@ -1,11 +1,14 @@
+#include <glm/glm.hpp>
+
 #include "ChunkManager.h"
+#include <glm\ext\matrix_transform.hpp>
 
 ChunkManager::ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm::vec3 currentChunk):
 	m_Renderer(renderer),
 	m_GameConfiguration(gameConf),
 	m_ChunkCount(CalculateChunkCount()),
 	m_Chunks(new Chunk* [m_ChunkCount] {nullptr}),
-	m_ChunkThread(&ChunkManager::RunChunkLoader, this),
+	//m_ChunkThread(&ChunkManager::RunChunkLoader, this),
 	m_ShouldUpdateChunks(false),
 	m_Running(true),
 	m_LastChunkPosition(currentChunk),
@@ -51,10 +54,25 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::Draw()
 {
+	Program& blockShader = m_Renderer->GetProgramByName("block");
+	// chunk manager specific:
+	blockShader.Bind();
+	m_Renderer->BindTexture("dirt", 0);
+	blockShader.SetUniform1i("tex", 0);
+	blockShader.SetUniformMatrix4fv("VP", 1, GL_FALSE, &m_Renderer->m_ViewProjection[0][0]);
+	blockShader.SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
+	blockShader.SetUniformVec3("viewPos", m_Renderer->m_CameraPosition);
+	blockShader.SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
 	for (size_t i = 0; i < m_ChunkCount; i++)
 	{
-		if (m_Chunks[i] != nullptr) {
-			m_Renderer->DrawChunk(*m_Chunks[i]);
+		Chunk *chunk = m_Chunks[i];
+		if (chunk != nullptr && 
+			chunk->GetVisibleBlocksCount() != 0 && 
+			m_Renderer->GetFrustrum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT)) 
+		{
+			glm::mat4 model = glm::translate(glm::mat4(1.0), chunk->GetPositionWorldSpace());
+			blockShader.SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
+			chunk->Draw(m_Renderer);
 		}
 	}
 }

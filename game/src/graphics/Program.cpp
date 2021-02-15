@@ -2,27 +2,27 @@
 // Created by bar44 on 10/30/2020.
 //
 
-#include "Shader.h"
+#include "Program.h"
 #include "glm/vec3.hpp"
 
-Shader::Shader(std::string vertexPath, std::string fragmentPath)
+Program::Program(std::string vertexPath, std::string fragmentPath)
         : m_RendererID(0), m_FragmentPath(std::move(fragmentPath)), m_VertexPath(std::move(vertexPath)) {
-    CompileShader();
+    CompileProgram();
 }
 
-Shader::~Shader() {
+Program::~Program() {
     glDeleteProgram(m_RendererID);
 }
 
-void Shader::Bind() const {
+void Program::Bind() const {
     glUseProgram(m_RendererID);
 }
 
-void Shader::Unbind() const {
+void Program::Unbind() const {
     glUseProgram(0);
 }
 
-bool Shader::CompileShader() {
+bool Program::CompileProgram() {
     std::cout << "compiling shader" << std::endl;
 
     // Create the shaders
@@ -110,7 +110,7 @@ bool Shader::CompileShader() {
     printf("Done!\n");
 }
 
-int Shader::GetUniformLocation(const std::string& name) {
+int Program::GetUniformLocation(const std::string& name) {
     if(m_UniformLocationCache.find(name) != m_UniformLocationCache.end()) {
         return m_UniformLocationCache[name];
     }
@@ -123,27 +123,27 @@ int Shader::GetUniformLocation(const std::string& name) {
     return location;
 }
 
-void Shader::SetUniform1f(const std::string &name, float value) {
+void Program::SetUniform1f(const std::string &name, float value) {
     glUniform1f(GetUniformLocation(name), value);
 }
 
-void Shader::SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3) {
+void Program::SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3) {
     glUniform4f(GetUniformLocation(name), v0, v1, v2, v3);
 }
 
-void Shader::SetUniform3f(const std::string &name, float v0, float v1, float v2) {
+void Program::SetUniform3f(const std::string &name, float v0, float v1, float v2) {
     glUniform3f(GetUniformLocation(name), v0, v1, v2);
 }
 
-void Shader::SetUniformVec3(const std::string &name, glm::vec3 v) {
+void Program::SetUniformVec3(const std::string &name, glm::vec3 v) {
     glUniform3f(GetUniformLocation(name), v.x, v.y, v.z);
 }
 
-void Shader::SetUniformMatrix4fv(const std::string &name, unsigned int count, bool transpose, float *matrix) {
+void Program::SetUniformMatrix4fv(const std::string &name, unsigned int count, bool transpose, float *matrix) {
     glUniformMatrix4fv(GetUniformLocation(name), count, transpose, matrix);
 }
 
-void Shader::SetUniform1i(const std::string &name, int value) {
+void Program::SetUniform1i(const std::string &name, int value) {
     glUniform1i(GetUniformLocation(name), value);
 }
 

@@ -27,7 +27,7 @@ Renderer::Renderer(int width, int height) :
 	m_Height(height),
 	m_Frustum() {
 	Texture* texture = new Texture("res/textures/dirt.png");
-	m_Textures[1] = texture;
+	m_Textures["dirt"] = texture;
 
 	LoadProgram("block", "res/shaders/block_vertex.shader", "res/shaders/block_fragment.shader");
 	LoadProgram("skybox", "res/shaders/skybox_vertex.shader", "res/shaders/skybox_fragment.shader");
@@ -36,7 +36,7 @@ Renderer::Renderer(int width, int height) :
 	VertexBufferLayout vb_layout;
 
 	m_SkyboxVB.SetData(&skybox_vertices[0], sizeof(skybox_vertices), GL_STATIC_DRAW);
-	m_SkyboxIB.SetData(&skybox_indices[0], 6 * 6, sizeof(unsigned char));
+	m_SkyboxIB.SetData(&skybox_indices[0], 6 * 6, GL_UNSIGNED_BYTE);
 	vb_layout.Push<char>(3, 0);
 	vb_layout.Push<char>(3, 1);
 	m_SkyboxVAO.AddBuffer(m_SkyboxVB, vb_layout);
@@ -54,32 +54,16 @@ void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDi
 	m_Projection = glm::perspective(glm::radians(45.0f),
 		(float)m_Width / (float)m_Height, 0.1f,
 		2000.0f);
-	glm::mat4 vp = m_Projection * m_View;
-	m_Frustum = Frustum(vp);
-	Shader* blockShader = m_ProgramsMap["block"];
-	blockShader->Bind();
-	m_Textures[1]->Bind(0);
-	blockShader->SetUniform1i("tex", 0);
-	blockShader->SetUniformMatrix4fv("VP", 1, GL_FALSE, &vp[0][0]);
-	blockShader->SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
-	blockShader->SetUniformVec3("viewPos", cameraPos);
-	blockShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
-}
-void Renderer::DrawChunk(Chunk& chunk) {
-	// frustum culling
-	// extract planes from mvp matrix
-	if (chunk.GetVisibleBlocksCount() != 0 && m_Frustum.CheckRect(chunk.GetPositionWorldSpace() + glm::vec3(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2), CHUNK_SIZE, CHUNK_HEIGHT)) {
-		glm::mat4 model = glm::translate(glm::mat4(1.0), chunk.GetPositionWorldSpace());
-		m_ProgramsMap["block"]->SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
-		chunk.Bind();
-		glDrawElements(GL_TRIANGLES, chunk.GetIndicesCount(), GL_UNSIGNED_INT, nullptr);
-		chunk.Unbind();
-	}
+	m_ViewProjection = m_Projection * m_View;
+	m_CameraPosition = cameraPos;
+	m_Frustum = Frustum(m_ViewProjection);
 }
 
-void Renderer::LoadProgram(std::string name, std::string vertexPath, std::string fragmentPath)
+void Renderer::DrawElements(IndexBuffer& ib)
 {
-	m_ProgramsMap[name] = new Shader(vertexPath, fragmentPath);
+	ib.Bind();
+	glDrawElements(GL_TRIANGLES, ib.GetCount(), ib.GetType(), nullptr);
+	ib.Unbind();
 }
 
 void Renderer::EndDraw(glm::vec3 cameraDir) {
@@ -91,15 +75,13 @@ void Renderer::EndDraw(glm::vec3 cameraDir) {
 
 	glDepthFunc(GL_LEQUAL);
 	glDisable(GL_CULL_FACE);
-	Shader* skyboxShader = m_ProgramsMap["skybox"];
+	Program* skyboxShader = m_ProgramsMap["skybox"];
 	skyboxShader->Bind();
 	skyboxShader->SetUniformMatrix4fv("VP", 1, GL_FALSE, &skybox_vp[0][0]);
 	skyboxShader->SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
 	skyboxShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
 	m_SkyboxVAO.Bind();
-	m_SkyboxVB.Bind();
-	m_SkyboxIB.Bind();
-	glDrawElements(GL_TRIANGLES, m_SkyboxIB.GetCount(), GL_UNSIGNED_BYTE, nullptr);
+	DrawElements(m_SkyboxIB);
 
 	glDepthFunc(GL_LESS);
 	glEnable(GL_CULL_FACE);
@@ -115,6 +97,31 @@ void Renderer::EndDraw(glm::vec3 cameraDir) {
 	glLineWidth(3.0f);
 	glDrawArrays(GL_LINES, 0, 6);
 	glEnable(GL_DEPTH_TEST);
+}
+
+void Renderer::LoadProgram(std::string name, std::string vertexPath, std::string fragmentPath)
+{
+	m_ProgramsMap[name] = new Program(vertexPath, fragmentPath);
+}
+
+void Renderer::LoadTexture(std::string name, std::string texturePath)
+{
+	m_Textures[name] = new Texture(texturePath);
+}
+
+void Renderer::BindTexture(std::string name, unsigned int slot)
+{
+	m_Textures[name]->Bind(slot);
+}
+
+Program& Renderer::GetProgramByName(std::string name)
+{
+	return *m_ProgramsMap[name];
+}
+
+Frustum& Renderer::GetFrustrum()
+{
+	return m_Frustum;
 }
 
 Renderer::~Renderer() {

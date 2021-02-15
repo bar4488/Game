@@ -154,9 +154,10 @@
     <ClCompile Include="src\Chunk.cpp" />
     <ClCompile Include="src\constants.h" />
     <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\graphics\gl_utils.cpp" />
     <ClCompile Include="src\graphics\IndexBuffer.cpp" />
     <ClCompile Include="src\graphics\Renderer.cpp" />
-    <ClCompile Include="src\graphics\Shader.cpp" />
+    <ClCompile Include="src\graphics\Program.cpp" />
     <ClCompile Include="src\graphics\Texture.cpp" />
     <ClCompile Include="src\graphics\VertexArray.cpp" />
     <ClCompile Include="src\graphics\VertexBuffer.cpp" />
@@ -173,9 +174,10 @@
     <ClInclude Include="src\Chunk.h" />
     <ClInclude Include="src\Configuration.h" />
     <ClInclude Include="src\Game.h" />
+    <ClInclude Include="src\graphics\gl_utils.h" />
     <ClInclude Include="src\graphics\IndexBuffer.h" />
     <ClInclude Include="src\graphics\Renderer.h" />
-    <ClInclude Include="src\graphics\Shader.h" />
+    <ClInclude Include="src\graphics\Program.h" />
     <ClInclude Include="src\graphics\Texture.h" />
     <ClInclude Include="src\graphics\VertexArray.h" />
     <ClInclude Include="src\graphics\VertexBuffer.h" />

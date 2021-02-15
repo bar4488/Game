@@ -17,9 +17,9 @@
 
 Chunk::Chunk(glm::vec3 position, VertexArray *vao, VertexBuffer *vb, IndexBuffer *ib)
 	: m_Position(position),
-	m_VertexArray(vao),
-	m_VertexBuffer(vb),
-	m_IndexBuffer(ib),
+	m_VertexArray(*vao),
+	m_VertexBuffer(*vb),
+	m_IndexBuffer(*ib),
 	m_VisibleBlocks()
 {
 	srand((unsigned)time(0));
@@ -91,7 +91,7 @@ Chunk::Chunk(glm::vec3 position)
 	CalculateIndices();
 }
 
-void AppendVertices(std::vector<CubeVertex> &face, int index, glm::tvec3<unsigned char> xyz) {
+void AppendVertices(std::vector<ChunkVertex> &face, int index, glm::tvec3<unsigned char> xyz) {
 		for (int i = 0; i < 4; ++i) {
 			face.push_back({
 					cube_vertices[index + i].position + xyz,
@@ -108,8 +108,7 @@ void AppendIndices(std::vector<unsigned int>& indices, int offset, const GLuint*
 }
 
 void Chunk::CalculateIndices() {
-	std::cout << sizeof(CubeVertex);
-    std::vector<CubeVertex> v_vertices;
+    std::vector<ChunkVertex> v_vertices;
     std::vector<GLuint> v_indices;
 	for (auto &index : m_VisibleBlocks) {
 		auto x = index % CHUNK_SIZE;
@@ -147,12 +146,12 @@ void Chunk::CalculateIndices() {
 		}
 	}
 	VertexBufferLayout vl;
-	m_VertexBuffer->SetData(&v_vertices.front(), sizeof(CubeVertex) * v_vertices.size(), GL_DYNAMIC_DRAW);
-	m_IndexBuffer->SetData(&v_indices.front(), v_indices.size(), sizeof(unsigned int), GL_DYNAMIC_DRAW);
+	m_VertexBuffer.SetData(&v_vertices.front(), sizeof(ChunkVertex) * v_vertices.size(), GL_DYNAMIC_DRAW);
+	m_IndexBuffer.SetData(&v_indices.front(), v_indices.size(), GL_UNSIGNED_INT, GL_DYNAMIC_DRAW);
 	vl.Push<unsigned char>(3, 0);
 	vl.Push<unsigned char>(2, 2);
 	vl.Push<char>(3, 3);
-	m_VertexArray->AddBuffer(*m_VertexBuffer, vl);
+	m_VertexArray.AddBuffer(m_VertexBuffer, vl);
 }
 
 void Chunk::CalculateVisibleVertices() {
@@ -169,6 +168,10 @@ glm::vec3 Chunk::GetPositionChunkSpace()
 	return Chunk::m_Position;
 }
 
+glm::vec3 Chunk::GetCenterWorldSpace() {
+	return GetPositionWorldSpace() + glm::vec3(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2);
+}
+
 glm::vec3 Chunk::GetPositionWorldSpace()
 {
 	return glm::vec3(Chunk::m_Position.x * CHUNK_SIZE, 
@@ -183,20 +186,25 @@ unsigned int Chunk::GetVisibleBlocksCount()
 
 void Chunk::Bind()
 {
-	m_VertexArray->Bind();
-	m_VertexBuffer->Bind();
-	m_IndexBuffer->Bind();
+	m_VertexArray.Bind();
+	m_IndexBuffer.Bind();
 }
 
 void Chunk::Unbind()
 {
-	m_VertexArray->Unbind();
-	m_VertexBuffer->Unbind();
-	m_IndexBuffer->Unbind();
+	m_VertexArray.Unbind();
+	m_VertexBuffer.Unbind();
+	m_IndexBuffer.Unbind();
 }
 unsigned int Chunk::GetIndicesCount()
 {
-	return m_IndexBuffer->GetCount();
+	return m_IndexBuffer.GetCount();
+}
+
+void Chunk::Draw(Renderer* renderer)
+{
+	m_VertexArray.Bind();
+	renderer->DrawElements(m_IndexBuffer);
 }
 ;
 

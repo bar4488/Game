@@ -15,11 +15,14 @@ public:
     void Update();
     void Draw();
     ~World();
+public:
+    void DrawSkybox();
+    void DrawCrosshair();
 private:
+    GameConfiguration *m_GameConfiguration;
+    WorldConficuration m_Configuration;
+    Renderer *m_Renderer;
     Player m_Player;
     ChunkManager m_ChunkMgr;
-    WorldConficuration m_Configuration;
-    GameConfiguration *m_GameConfiguration;
-    Renderer *m_Renderer;
 };
 

@@ -97,13 +97,13 @@ constexpr GLuint up_indices[] = {
 };
 
 
- struct CubeVertex {
+ struct ChunkVertex {
 	 glm::tvec3<unsigned char> position;
 	 glm::tvec2<unsigned char> uv;
 	 glm::tvec3<char> normal;
  };
 
- constexpr CubeVertex cube_vertices[] = {
+ constexpr ChunkVertex cube_vertices[] = {
 	// Right face 0-4
 	{{1, 1, 1}, {0, 3}, {1, 0, 0}},
 	{{1, 0, 1}, {0, 0}, {1, 0, 0}},
