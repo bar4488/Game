@@ -43,7 +43,8 @@ Renderer::Renderer(int width, int height) :
 
 	m_CrosshairVB.SetData(&crosshair_vertices, sizeof(crosshair_vertices), GL_STATIC_DRAW);
 	vb_layout.Clear();
-	vb_layout.Push<float>(2, 0);
+	vb_layout.Push<float>(3, 0);
+	vb_layout.Push<float>(3, 1);
 	m_CrosshairVAO.AddBuffer(m_CrosshairVB, vb_layout);
 }
 
@@ -85,7 +86,8 @@ void Renderer::EndDraw(glm::vec3 cameraDir) {
 	glm::mat4 Projection = glm::perspective(glm::radians(45.0f),
 		(float)m_Width / (float)m_Height, 0.1f,
 		2000.0f);
-	glm::mat4 skybox_vp = Projection * glm::mat4(glm::mat3(m_View));
+	glm::mat4 no_transform_view = glm::mat4(glm::mat3(m_View));
+	glm::mat4 skybox_vp = Projection * no_transform_view;
 
 	glDepthFunc(GL_LEQUAL);
 	glDisable(GL_CULL_FACE);
@@ -102,14 +104,16 @@ void Renderer::EndDraw(glm::vec3 cameraDir) {
 	glDepthFunc(GL_LESS);
 	glEnable(GL_CULL_FACE);
 
+	glm::mat4 crosshair_m = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 1.5));
+	glm::mat4 crosshair_p = glm::ortho(-1 * (float)m_Width / (float)m_Height, (float)m_Width / (float)m_Height, -1.0f, 1.0f);
+	glm::mat4 crosshair_vp = crosshair_p * no_transform_view;
 	glDisable(GL_DEPTH_TEST);
 	m_ProgramsMap["crosshair"]->Bind();
-	m_ProgramsMap["crosshair"]->SetUniform1f("width", m_Width);
-	m_ProgramsMap["crosshair"]->SetUniform1f("height", m_Height);
+	m_ProgramsMap["crosshair"]->SetUniformMatrix4fv("view", 1, GL_FALSE, &crosshair_vp[0][0]);
 	m_CrosshairVAO.Bind();
 	m_CrosshairVB.Bind();
 	glLineWidth(3.0f);
-	glDrawArrays(GL_LINES, 0, 4);
+	glDrawArrays(GL_LINES, 0, 6);
 	glEnable(GL_DEPTH_TEST);
 }
 
