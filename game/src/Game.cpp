@@ -46,8 +46,8 @@ void Game::Run() {
 	// Game Loop //
 	using clock = std::chrono::high_resolution_clock;
 	auto previous = clock::now();
-	std::chrono::nanoseconds lag(0ns);
 	std::chrono::nanoseconds timestamp(chrono::milliseconds(1000 / m_TicksPerSecond));
+	std::chrono::nanoseconds lag = timestamp;
 	while (!glfwWindowShouldClose(m_Window)) {
 		auto current = clock::now();
 		auto deltaTime = current - previous;

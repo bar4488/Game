@@ -5,6 +5,7 @@
 #include <thread>
 #include <mutex>
 #include "Configuration.h"
+#include "ChunkManager.h"
 
 
 class World
@@ -14,20 +15,11 @@ public:
     void Update();
     void Draw();
     ~World();
-    void RunChunkLoader();
 private:
     Player m_Player;
+    ChunkManager m_ChunkMgr;
     WorldConficuration m_Configuration;
     GameConfiguration *m_GameConfiguration;
     Renderer *m_Renderer;
-    uint32_t m_ChunkCount;
-	Chunk** m_Chunks;
-    bool m_ShouldUpdateChunks;
-    bool m_Running;
-    glm::vec3 m_LastChunkPosition;
-    glm::vec3 m_CurrentChunk;
-    std::mutex m_ChunksLock; // lock for when we try to change shouldUpdateChunks
-    std::thread m_ChunkThread;
-    std::condition_variable m_ChunkCV;
 };
 
