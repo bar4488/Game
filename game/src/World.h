@@ -6,6 +6,8 @@
 #include <mutex>
 #include "Configuration.h"
 #include "ChunkManager.h"
+#include "decor/Skybox.h"
+#include "decor/Crosshair.h"
 
 
 class World
@@ -24,5 +26,7 @@ private:
     Renderer *m_Renderer;
     Player m_Player;
     ChunkManager m_ChunkMgr;
+    Skybox m_Skybox;
+    Crosshair m_Crosshair;
 };
 

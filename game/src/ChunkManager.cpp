@@ -54,15 +54,15 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::Draw()
 {
-	Program& blockShader = m_Renderer->GetProgramByName("block");
+	Program* blockShader = m_Renderer->GetProgramByName("block");
 	// chunk manager specific:
-	blockShader.Bind();
+	blockShader->Bind();
 	m_Renderer->BindTexture("dirt", 0);
-	blockShader.SetUniform1i("tex", 0);
-	blockShader.SetUniformMatrix4fv("VP", 1, GL_FALSE, &m_Renderer->m_ViewProjection[0][0]);
-	blockShader.SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
-	blockShader.SetUniformVec3("viewPos", m_Renderer->m_CameraPosition);
-	blockShader.SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
+	blockShader->SetUniform1i("tex", 0);
+	blockShader->SetUniformMatrix4fv("VP", 1, GL_FALSE, &m_Renderer->m_ViewProjection[0][0]);
+	blockShader->SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
+	blockShader->SetUniformVec3("viewPos", m_Renderer->m_CameraPosition);
+	blockShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
 	for (size_t i = 0; i < m_ChunkCount; i++)
 	{
 		Chunk *chunk = m_Chunks[i];
@@ -71,7 +71,7 @@ void ChunkManager::Draw()
 			m_Renderer->GetFrustrum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT)) 
 		{
 			glm::mat4 model = glm::translate(glm::mat4(1.0), chunk->GetPositionWorldSpace());
-			blockShader.SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
+			blockShader->SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
 			chunk->Draw(m_Renderer);
 		}
 	}

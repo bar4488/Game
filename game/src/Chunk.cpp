@@ -203,8 +203,7 @@ unsigned int Chunk::GetIndicesCount()
 
 void Chunk::Draw(Renderer* renderer)
 {
-	m_VertexArray.Bind();
-	renderer->DrawElements(m_IndexBuffer);
+	renderer->DrawElements(m_VertexArray, m_IndexBuffer);
 }
 ;
 

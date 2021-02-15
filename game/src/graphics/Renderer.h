@@ -21,16 +21,21 @@ public:
 
 	void BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDir);
 	void EndDraw(glm::vec3 cameraDir);
-	void DrawElements(IndexBuffer& ib);
+	void DrawElements(VertexArray& vb, IndexBuffer& ib);
+	void DrawLines(VertexArray& va, unsigned int first, unsigned int count, float width);
 	void LoadProgram(std::string name, std::string vertexPath, std::string fragmentPath);
 	void LoadTexture(std::string name, std::string texturePath);
 	void BindTexture(std::string name, unsigned int slot);
-	Program& GetProgramByName(std::string name);
-	Frustum &GetFrustrum();
+	void EnableCap(unsigned int c);
+	void DisableCap(unsigned int c);
+	glm::mat4 GetOrthoProjection(float size);
+	Program* GetProgramByName(std::string name);
+	Frustum& GetFrustrum();
 public:
 	glm::mat4 m_ViewProjection;
 	glm::mat4 m_Projection;
 	glm::mat4 m_View;
+	glm::mat4 m_NTView;
 	glm::vec3 m_CameraPosition;
 private:
     std::unordered_map<std::string, Program*> m_ProgramsMap;

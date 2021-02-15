@@ -5,8 +5,12 @@ World::World(Renderer* renderer, GameConfiguration* gameConf) :
 	m_GameConfiguration(gameConf),
 	m_Configuration(),
 	m_Renderer(renderer),
-	m_ChunkMgr(renderer, gameConf, m_Player.GetCurrentChunkPosition())
+	m_ChunkMgr(renderer, gameConf, m_Player.GetCurrentChunkPosition()),
+	m_Skybox(renderer),
+	m_Crosshair(renderer)
 {
+	m_Renderer->LoadTexture("dirt", "res/textures/dirt.png");
+	m_Renderer->LoadProgram("block", "res/shaders/block_vertex.shader", "res/shaders/block_fragment.shader");
 }
 
 void World::Update()
@@ -21,6 +25,8 @@ void World::Draw()
 {
 	m_Renderer->BeginDraw(m_Player.GetViewProjection(), m_Player.m_Position, m_Player.GetViewDirection());
 	m_ChunkMgr.Draw();
+	m_Skybox.Draw();
+	m_Crosshair.Draw();
 	m_Renderer->EndDraw(m_Player.GetViewDirection());
 }
 
