@@ -5,13 +5,18 @@
 #include "Game.h"
 #include "GL/glew.h"
 #include "iostream"
-#include "chrono"
+#include <chrono>
+#include <iostream>
+#include <sstream>
+
 
 #ifdef _WIN32
 #include <Windows.h>
 #else
 #include <unistd.h>
 #endif
+
+#include "utils/timer.h"
 
 using namespace std;
 
@@ -41,7 +46,9 @@ void Game::Run() {
 	glfwSwapInterval(0);
 
 	// Initialize World
+	unsigned int handle = timer::start();
 	world = new World(&m_Renderer, &m_Configuration);
+	std::cout << "milliseconds: " << timer::lap(handle).count() / 1000000 << std::endl;
 
 	// Game Loop //
 	using clock = std::chrono::high_resolution_clock;

@@ -16,6 +16,7 @@
 class Program {
 public:
     unsigned int m_RendererID;
+    bool m_Success;
     std::unordered_map<std::string, int> m_UniformLocationCache;
 
     Program(std::string vertexPath, std::string fragmentPath);

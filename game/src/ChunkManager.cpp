@@ -38,11 +38,10 @@ ChunkManager::ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm:
 						new VertexArray(vao_array[i]),
 						new VertexBuffer(vb_array[i]), 
 						new IndexBuffer(ib_array[i]));
-				std::cout << "loaded chunk\n";
 			}
 		}
 	}
-	std::cout << "finished chunk loading!";
+	std::cout << "finished loading " << m_ChunkCount <<" chunks!";
 }
 
 ChunkManager::~ChunkManager()

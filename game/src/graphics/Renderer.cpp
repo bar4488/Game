@@ -62,7 +62,10 @@ void Renderer::EndDraw(glm::vec3 cameraDir) {
 
 void Renderer::LoadProgram(std::string name, std::string vertexPath, std::string fragmentPath)
 {
+	std::cout << "loading program " << name << "...\n";
 	m_ProgramsMap[name] = new Program(vertexPath, fragmentPath);
+	if(m_ProgramsMap[name]->m_Success == true)
+		std::cout << "program loaded successfuly\n";
 }
 
 void Renderer::LoadTexture(std::string name, std::string texturePath)

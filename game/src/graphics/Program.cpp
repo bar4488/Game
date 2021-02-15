@@ -5,8 +5,12 @@
 #include "Program.h"
 #include "glm/vec3.hpp"
 
-Program::Program(std::string vertexPath, std::string fragmentPath)
-        : m_RendererID(0), m_FragmentPath(std::move(fragmentPath)), m_VertexPath(std::move(vertexPath)) {
+Program::Program(std::string vertexPath, std::string fragmentPath): 
+    m_RendererID(0), 
+    m_FragmentPath(std::move(fragmentPath)), 
+    m_VertexPath(std::move(vertexPath)),
+    m_Success(false)
+{
     CompileProgram();
 }
 
@@ -38,9 +42,7 @@ bool Program::CompileProgram() {
         VertexShaderCode = sstr.str();
         VertexShaderStream.close();
     } else {
-        std::cout << "Impossible to open " << m_VertexPath
-                  << ". Are you in the right directory ? Don't forget to read the FAQ !" << std::endl;
-        getchar();
+        std::cout << "Impossible to open " << m_VertexPath << "\n";
         return 0;
     }
 
@@ -69,6 +71,7 @@ bool Program::CompileProgram() {
         std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
         glGetShaderInfoLog(VertexShaderID, InfoLogLength, nullptr, &VertexShaderErrorMessage[0]);
         printf("%s\n", &VertexShaderErrorMessage[0]);
+        return 0;
     }
 
     // Compile Fragment Shader
@@ -83,6 +86,7 @@ bool Program::CompileProgram() {
         std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
         glGetShaderInfoLog(FragmentShaderID, InfoLogLength, nullptr, &FragmentShaderErrorMessage[0]);
         printf("%s\n", &FragmentShaderErrorMessage[0]);
+        return 0;
     }
 
     // Link the program
@@ -99,6 +103,7 @@ bool Program::CompileProgram() {
         std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
         glGetProgramInfoLog(m_RendererID, InfoLogLength, nullptr, &ProgramErrorMessage[0]);
         printf("%s\n", &ProgramErrorMessage[0]);
+        return 0;
     }
 
     glDetachShader(m_RendererID, VertexShaderID);
@@ -107,7 +112,7 @@ bool Program::CompileProgram() {
     glDeleteShader(VertexShaderID);
     glDeleteShader(FragmentShaderID);
 
-    printf("Done!\n");
+    m_Success = true;
 }
 
 int Program::GetUniformLocation(const std::string& name) {
