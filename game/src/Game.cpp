@@ -12,6 +12,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#undef DrawText
 #else
 #include <unistd.h>
 #endif
@@ -37,7 +38,7 @@ Game::Game(int width, int height) :
 	m_TicksPerSecond(60),
 	m_Window(SetupGraphics()),
 	m_Renderer(width, height),
-	m_Configuration{11u,0u,width,height,m_Window}
+	m_Configuration{1u,0u,width,height,m_Window}
 {
 }
 
@@ -47,6 +48,7 @@ void Game::Run() {
 
 	// Initialize World
 	const auto handle = timer::start();
+	m_Renderer.LoadFont("arial", "res/fonts/arial.ttf", 48);
 	world = new World(&m_Renderer, &m_Configuration);
 	std::cout << "milliseconds: " << timer::lap(handle).count() / 1000000 << std::endl;
 
@@ -56,6 +58,7 @@ void Game::Run() {
 	const auto fps_handle = timer::start();
 	auto lag = timestamp;
 	auto seconds_lag = timestamp;
+	int current_fps = 0;
 	while (!glfwWindowShouldClose(m_Window)) {
 		const auto d_time = timer::lap(fps_handle);
 		lag += d_time;
@@ -65,6 +68,7 @@ void Game::Run() {
 		{
 			//std::cout << "current fps: " << 1000000000 / timer::average(fps_handle).count() << std::endl;
 			std::cout << "current mpf: " << timer::average(fps_handle).count() / 1000000 << std::endl;
+			current_fps = 1000000000 / timer::average(fps_handle).count();
 			timer::reset(fps_handle);
 			seconds_lag = 0ns;
 		}
@@ -92,6 +96,7 @@ void Game::Run() {
 			lag = std::chrono::nanoseconds(0ns);
 		}
 		world->Draw();
+		m_Renderer.DrawText("arial", "FPS: " + std::to_string(current_fps), 1.0f, glm::vec2(10, 10), glm::vec3(0,0,0));
 		glfwSwapBuffers(m_Window);
 	}
 	glfwTerminate();
@@ -164,7 +169,7 @@ GLFWwindow* Game::SetupGraphics() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 
 
 	glEnable(GL_CULL_FACE);

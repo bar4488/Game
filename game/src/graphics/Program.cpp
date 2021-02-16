@@ -42,7 +42,7 @@ bool Program::CompileProgram() {
         VertexShaderCode = sstr.str();
         VertexShaderStream.close();
     } else {
-        std::cout << "Impossible to open " << m_VertexPath << "\n";
+        std::cout << "\tImpossible to open " << m_VertexPath << "\n";
         return 0;
     }
 
@@ -70,8 +70,8 @@ bool Program::CompileProgram() {
     if (InfoLogLength > 0) {
         std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
         glGetShaderInfoLog(VertexShaderID, InfoLogLength, nullptr, &VertexShaderErrorMessage[0]);
-        printf("%s\n", &VertexShaderErrorMessage[0]);
-        return 0;
+        printf("\tvertex shader error: %s: %s\n", m_VertexPath.c_str(), &VertexShaderErrorMessage[0]);
+        return false;
     }
 
     // Compile Fragment Shader
@@ -85,12 +85,12 @@ bool Program::CompileProgram() {
     if (InfoLogLength > 0) {
         std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
         glGetShaderInfoLog(FragmentShaderID, InfoLogLength, nullptr, &FragmentShaderErrorMessage[0]);
-        printf("%s\n", &FragmentShaderErrorMessage[0]);
-        return 0;
+        printf("\tfragment shader error: %s: %s\n", m_FragmentPath.c_str(), &FragmentShaderErrorMessage[0]);
+        return false;
     }
 
     // Link the program
-    printf("Linking program\n");
+    printf("\tLinking program...\n");
     m_RendererID = glCreateProgram();
     glAttachShader(m_RendererID, VertexShaderID);
     glAttachShader(m_RendererID, FragmentShaderID);
@@ -102,8 +102,8 @@ bool Program::CompileProgram() {
     if (InfoLogLength > 0) {
         std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
         glGetProgramInfoLog(m_RendererID, InfoLogLength, nullptr, &ProgramErrorMessage[0]);
-        printf("%s\n", &ProgramErrorMessage[0]);
-        return 0;
+        printf("\tprogram linking error: %s\n", &ProgramErrorMessage[0]);
+        return false;
     }
 
     glDetachShader(m_RendererID, VertexShaderID);
@@ -122,7 +122,8 @@ int Program::GetUniformLocation(const std::string& name) {
 
     int location = glGetUniformLocation(m_RendererID, name.c_str());
     if (location == -1) {
-        std::cerr << "Warning: uniform named '" << name << "' not found!";
+        std::cerr << "Warning: uniform named '" << name << "' not found!\n";
+        std::cerr << "\tfragment path: " << m_FragmentPath << "\n\tvertex path: " << m_VertexPath << std::endl;
     }
     m_UniformLocationCache[name] = location;
     return location;

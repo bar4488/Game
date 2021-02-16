@@ -168,6 +168,8 @@
     <ClCompile Include="src\graphics\VertexBufferLayout.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\utils\fonts\Font.cpp" />
+    <ClCompile Include="src\utils\fonts\FreeType.cpp" />
     <ClCompile Include="src\utils\timer.cpp" />
     <ClCompile Include="src\vendor\glm\detail\glm.cpp" />
     <ClCompile Include="src\vendor\stb_image\stb_image.cpp" />
@@ -190,6 +192,8 @@
     <ClInclude Include="src\graphics\VertexBuffer.h" />
     <ClInclude Include="src\graphics\VertexBufferLayout.h" />
     <ClInclude Include="src\Player.h" />
+    <ClInclude Include="src\utils\fonts\Font.h" />
+    <ClInclude Include="src\utils\fonts\FreeType.h" />
     <ClInclude Include="src\utils\timer.h" />
     <ClInclude Include="src\vendor\glm\common.hpp" />
     <ClInclude Include="src\vendor\glm\detail\compute_common.hpp" />
@@ -483,6 +487,8 @@
     <None Include="res\shaders\crosshair_vertex.shader" />
     <None Include="res\shaders\skybox_fragment.shader" />
     <None Include="res\shaders\skybox_vertex.shader" />
+    <None Include="res\shaders\text_fragment.shader" />
+    <None Include="res\shaders\text_vertex.shader" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
     <None Include="src\vendor\glm\detail\func_common_simd.inl" />
     <None Include="src\vendor\glm\detail\func_exponential.inl" />
@@ -622,6 +628,17 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\dirt.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="res\fonts\arial.ttf" />
+    <Font Include="res\fonts\arialbd.ttf" />
+    <Font Include="res\fonts\arialbi.ttf" />
+    <Font Include="res\fonts\ariali.ttf" />
+    <Font Include="res\fonts\ARIALN.TTF" />
+    <Font Include="res\fonts\ARIALNB.TTF" />
+    <Font Include="res\fonts\ARIALNBI.TTF" />
+    <Font Include="res\fonts\ARIALNI.TTF" />
+    <Font Include="res\fonts\ariblk.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

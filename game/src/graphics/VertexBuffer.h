@@ -13,12 +13,13 @@ class VertexBuffer {
 private:
     unsigned int m_RendererID;
 public:
+    explicit VertexBuffer(unsigned int rendererId);
     VertexBuffer(const void * data, unsigned int size, GLenum usage = GL_STATIC_DRAW);
     VertexBuffer();
-    VertexBuffer(unsigned int rendererId);
     ~VertexBuffer();
 
     void SetData(const void * data, unsigned int size, GLenum usage = GL_STATIC_DRAW);
+    void SubData(const void * data, unsigned int offset, unsigned int size);
 
     void Bind() const;
     void Unbind();

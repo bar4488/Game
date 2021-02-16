@@ -107,7 +107,7 @@ void ChunkManager::Draw()
 		auto* chunk = m_Chunks[i];
 		if (chunk != nullptr &&
 			chunk->GetVisibleBlocksCount() != 0 &&
-			m_Renderer->GetFrustrum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT))
+			m_Renderer->GetFrustum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT))
 		{
 			auto model = translate(glm::mat4(1.0), chunk->GetPositionWorldSpace());
 			auto mvp = m_Renderer->m_ViewProjection * model;

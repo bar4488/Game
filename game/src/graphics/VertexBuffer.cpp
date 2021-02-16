@@ -36,3 +36,9 @@ void VertexBuffer::SetData(const void *data, unsigned int size, GLenum usage) {
     glBufferData(GL_ARRAY_BUFFER, size, data, usage);
 }
 
+void VertexBuffer::SubData(const void* data, unsigned offset, unsigned size)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+    glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+}
+

@@ -11,9 +11,6 @@
 #include <iostream>
 #include "../constants.h"
 
-#include <ft2build.h>
-#include <freetype/freetype.h>  
-
 using namespace std;
 
 Renderer::Renderer(int width, int height) :
@@ -25,7 +22,9 @@ Renderer::Renderer(int width, int height) :
 	m_CrosshairVB(),
 	m_Width(width),
 	m_Height(height),
-	m_Frustum() {
+	m_Frustum(),
+	m_FreeType(this)
+{
 }
 
 void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDir) {
@@ -49,6 +48,18 @@ void Renderer::DrawElements(VertexArray& vb, IndexBuffer& ib)
 	ib.Unbind();
 }
 
+void Renderer::DrawText(std::string font, std::string text, float scale, glm::vec2 position, glm::vec3 color)
+{
+	DisableCap(GL_DEPTH_TEST);
+	m_FreeType.RenderText(m_Fonts[font], text, scale, position, color);
+	EnableCap(GL_DEPTH_TEST);
+}
+
+void Renderer::DrawText3D(std::string font, std::string text, float scale, glm::vec2 position, glm::vec3 color)
+{
+	std::cout << "ERROR: Drawing 3d text is not implemented!\n";
+}
+
 void Renderer::DrawLines(VertexArray& va, unsigned int first, unsigned int count, float width)
 {
 	va.Bind();
@@ -64,13 +75,20 @@ void Renderer::LoadProgram(std::string name, std::string vertexPath, std::string
 {
 	std::cout << "loading program " << name << "...\n";
 	m_ProgramsMap[name] = new Program(vertexPath, fragmentPath);
-	if(m_ProgramsMap[name]->m_Success == true)
-		std::cout << "program loaded successfuly\n";
+	if (m_ProgramsMap[name]->m_Success == true)
+		std::cout << "program loaded successfully\n";
+	else
+		std::cout << "could not load program!\n";
 }
 
 void Renderer::LoadTexture(std::string name, std::string texturePath)
 {
 	m_Textures[name] = new Texture(texturePath);
+}
+
+void Renderer::LoadFont(std::string name, std::string font_path, unsigned int size)
+{
+	m_Fonts[name] = new Font(&m_FreeType, font_path, size);
 }
 
 void Renderer::BindTexture(std::string name, unsigned int slot)
@@ -88,6 +106,11 @@ void Renderer::DisableCap(unsigned int c)
 	glDisable(c);
 }
 
+glm::mat4 Renderer::GetOrthoProjection()
+{
+	return glm::ortho(0.0f, static_cast<float>(m_Width), 0.0f, static_cast<float>(m_Height));
+}
+
 // returns an orthogonal projection, centered at 0 with ratio of the renderers screen and of size 'size'
 glm::mat4 Renderer::GetOrthoProjection(float size)
 {
@@ -99,7 +122,7 @@ Program* Renderer::GetProgramByName(std::string name)
 	return m_ProgramsMap[name];
 }
 
-Frustum& Renderer::GetFrustrum()
+Frustum& Renderer::GetFrustum()
 {
 	return m_Frustum;
 }

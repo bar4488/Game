@@ -78,6 +78,12 @@
     <ClCompile Include="src\utils\timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\utils\fonts\FreeType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils\fonts\Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Chunk.h">
@@ -983,6 +989,12 @@
     <ClInclude Include="src\utils\timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\utils\fonts\FreeType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils\fonts\Font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\vendor\glm\detail\func_common.inl">
@@ -1399,10 +1411,23 @@
     <None Include="res\shaders\crosshair_vertex.shader" />
     <None Include="res\shaders\block_vertex.shader" />
     <None Include="res\shaders\block_fragment.shader" />
+    <None Include="res\shaders\text_fragment.shader" />
+    <None Include="res\shaders\text_vertex.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\dirt.png">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="res\fonts\arial.ttf" />
+    <Font Include="res\fonts\arialbd.ttf" />
+    <Font Include="res\fonts\arialbi.ttf" />
+    <Font Include="res\fonts\ariali.ttf" />
+    <Font Include="res\fonts\ARIALN.TTF" />
+    <Font Include="res\fonts\ARIALNB.TTF" />
+    <Font Include="res\fonts\ARIALNBI.TTF" />
+    <Font Include="res\fonts\ARIALNI.TTF" />
+    <Font Include="res\fonts\ariblk.ttf" />
   </ItemGroup>
 </Project>
