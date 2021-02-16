@@ -46,28 +46,34 @@ void Game::Run() {
 	glfwSwapInterval(0);
 
 	// Initialize World
-	unsigned int handle = timer::start();
+	const auto handle = timer::start();
 	world = new World(&m_Renderer, &m_Configuration);
 	std::cout << "milliseconds: " << timer::lap(handle).count() / 1000000 << std::endl;
 
 	// Game Loop //
-	using clock = std::chrono::high_resolution_clock;
-	auto previous = clock::now();
-	std::chrono::nanoseconds timestamp(chrono::milliseconds(1000 / m_TicksPerSecond));
-	std::chrono::nanoseconds lag = timestamp;
+	using ns = std::chrono::nanoseconds;
+	const ns timestamp(chrono::milliseconds(1000 / m_TicksPerSecond));
+	const auto fps_handle = timer::start();
+	auto lag = timestamp;
+	auto seconds_lag = timestamp;
 	while (!glfwWindowShouldClose(m_Window)) {
-		auto current = clock::now();
-		auto deltaTime = current - previous;
-		previous = current;
-		lag += std::chrono::duration_cast<std::chrono::nanoseconds>(deltaTime);
+		const auto d_time = timer::lap(fps_handle);
+		lag += d_time;
+		seconds_lag += d_time;
 
-		while (lag >= timestamp) {
+		if(seconds_lag.count() > 1000000000)
+		{
+			std::cout << "current fps: " << 1000000000 / timer::average(fps_handle).count() << std::endl;
+			timer::reset(fps_handle);
+			seconds_lag = 0ns;
+		}
+		if (lag >= timestamp) {
 			glfwPollEvents();
-			int escape_state = glfwGetKey(m_Window, GLFW_KEY_ESCAPE);
+			const auto escape_state = glfwGetKey(m_Window, GLFW_KEY_ESCAPE);
 			if (escape_state == GLFW_PRESS) {
 				glfwSetWindowShouldClose(m_Window, 1);
 			}
-			int f_state = glfwGetKey(m_Window, GLFW_KEY_F);
+			auto f_state = glfwGetKey(m_Window, GLFW_KEY_F);
 			// TODO: implement keypress system
 			/*
 			if (f_state == GLFW_PRESS) {

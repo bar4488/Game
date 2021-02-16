@@ -31,5 +31,6 @@ void main(){
 
     vec4 texColor = texture(tex, v_texCoords / 3);
     vec4 result = vec4(ambient + diffuse + specular, 1.0) * texColor;
+    
     color = result;
 }

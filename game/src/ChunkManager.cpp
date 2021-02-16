@@ -1,7 +1,7 @@
 #include <glm/glm.hpp>
 
 #include "ChunkManager.h"
-#include <glm\ext\matrix_transform.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 ChunkManager::ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm::vec3 currentChunk):
 	m_Renderer(renderer),
@@ -15,26 +15,27 @@ ChunkManager::ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm:
 	m_CurrentChunk(currentChunk),
 	m_ChunkCV()
 {
-	glm::vec3 startingChunk = m_LastChunkPosition - glm::vec3(m_GameConfiguration->chunkRenderDistance, m_GameConfiguration->chunkRenderHeight, m_GameConfiguration->chunkRenderDistance);
+	const auto starting_chunk = m_LastChunkPosition - glm::vec3(m_GameConfiguration->chunkRenderDistance, m_GameConfiguration->chunkRenderHeight, m_GameConfiguration->chunkRenderDistance);
+	const auto chunk_height = 1 + 2 * m_GameConfiguration->chunkRenderHeight;
 	// first setup of chunks, initialize m_LastChunkPosition
 	// we want to create chunks from the closest to the player and away.
-	uint32_t chunkHeight = 1 + 2 * m_GameConfiguration->chunkRenderHeight,
-		chunkWidth = 1 + 2 * m_GameConfiguration->chunkRenderDistance;
-	GLuint* vao_array = new GLuint[m_ChunkCount];
-	GLuint* vb_array = new GLuint[m_ChunkCount];
-	GLuint* ib_array = new GLuint[m_ChunkCount];
+	const auto
+		chunk_width = 1 + 2 * m_GameConfiguration->chunkRenderDistance;
+	auto* const vao_array = new GLuint[m_ChunkCount];
+	auto* const vb_array = new GLuint[m_ChunkCount];
+	auto* const ib_array = new GLuint[m_ChunkCount];
 	glGenBuffers(m_ChunkCount, vb_array);
 	glGenBuffers(m_ChunkCount, ib_array);
 	glGenVertexArrays(m_ChunkCount, vao_array);
-	for (int z = 0; z < chunkWidth; z++)
+	for (auto z = 0; z < chunk_width; z++)
 	{
-		for (int y = 0; y < chunkHeight; y++)
+		for (auto y = 0; y < chunk_height; y++)
 		{
-			for (int x = 0; x < chunkWidth; x++)
+			for (auto x = 0; x < chunk_width; x++)
 			{
-				int i = x + y * chunkWidth + z * chunkWidth * chunkHeight;
+				const int i = x + y * chunk_width + z * chunk_width * chunk_height;
 				m_Chunks[i] = 
-					new Chunk(glm::vec3(startingChunk.x + x, startingChunk.y + y, startingChunk.z + z), 
+					new Chunk(glm::vec3(x + starting_chunk.x, y + starting_chunk.y, z + starting_chunk.z), 
 						new VertexArray(vao_array[i]),
 						new VertexBuffer(vb_array[i]), 
 						new IndexBuffer(ib_array[i]));
@@ -58,18 +59,19 @@ void ChunkManager::Draw()
 	blockShader->Bind();
 	m_Renderer->BindTexture("dirt", 0);
 	blockShader->SetUniform1i("tex", 0);
-	blockShader->SetUniformMatrix4fv("VP", 1, GL_FALSE, &m_Renderer->m_ViewProjection[0][0]);
 	blockShader->SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
 	blockShader->SetUniformVec3("viewPos", m_Renderer->m_CameraPosition);
 	blockShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
 	for (size_t i = 0; i < m_ChunkCount; i++)
 	{
-		Chunk *chunk = m_Chunks[i];
+		auto chunk = m_Chunks[i];
 		if (chunk != nullptr && 
 			chunk->GetVisibleBlocksCount() != 0 && 
 			m_Renderer->GetFrustrum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT)) 
 		{
-			glm::mat4 model = glm::translate(glm::mat4(1.0), chunk->GetPositionWorldSpace());
+			auto model = translate(glm::mat4(1.0), chunk->GetPositionWorldSpace());
+			auto mvp = m_Renderer->m_ViewProjection * model;
+			blockShader->SetUniformMatrix4fv("MVP", 1, GL_FALSE, &mvp[0][0]);
 			blockShader->SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
 			chunk->Draw(m_Renderer);
 		}
@@ -94,8 +96,8 @@ void ChunkManager::SetCurrenChunk(glm::vec3 currentChunk)
 
 uint32_t ChunkManager::CalculateChunkCount()
 {
-	uint32_t range = 1 + 2 * m_GameConfiguration->chunkRenderDistance;
-	uint32_t height = 1 + 2 * m_GameConfiguration->chunkRenderHeight;
+	const auto range = 1 + 2 * m_GameConfiguration->chunkRenderDistance;
+	const auto height = 1 + 2 * m_GameConfiguration->chunkRenderHeight;
 	return range * range * height;
 }
 
@@ -111,23 +113,23 @@ void ChunkManager::RunChunkLoader() {
 			currentChunk = m_CurrentChunk;
 			m_ShouldUpdateChunks = false;
 		}
-		uint32_t chunkDist = m_GameConfiguration->chunkRenderDistance, 
-			chunkHeight = m_GameConfiguration->chunkRenderHeight;
+		const auto chunk_dist = m_GameConfiguration->chunkRenderDistance, 
+			chunk_height = m_GameConfiguration->chunkRenderHeight;
 		for (size_t i = 0; i < m_ChunkCount; i++)
 		{
-			Chunk* chunk = m_Chunks[i];
-			glm::vec3 chunkPos = chunk->GetPositionChunkSpace();
-			if (chunkPos.x < currentChunk.x - chunkDist ||
-				chunkPos.x > currentChunk.x + chunkDist ||
-				chunkPos.z < currentChunk.z - chunkDist ||
-				chunkPos.z > currentChunk.z + chunkDist ||
-				chunkPos.y < currentChunk.y - chunkHeight ||
-				chunkPos.y > currentChunk.y + chunkHeight) {
+			auto* const chunk = m_Chunks[i];
+			auto chunk_pos = chunk->GetPositionChunkSpace();
+			if (chunk_pos.x < currentChunk.x - chunk_dist ||
+				chunk_pos.x > currentChunk.x + chunk_dist ||
+				chunk_pos.z < currentChunk.z - chunk_dist ||
+				chunk_pos.z > currentChunk.z + chunk_dist ||
+				chunk_pos.y < currentChunk.y - chunk_height ||
+				chunk_pos.y > currentChunk.y + chunk_height) {
 				// chunk is out side of render area.
 				// if the chunk at position 'p' relativly to the player last position is now out of render area,
 				// the chunk at position '-p' relativly to the player current  position must be in the render area.
-				glm::vec3 reversed = currentChunk - (chunkPos - m_LastChunkPosition);
-				reversed.y = chunkPos.y;
+				auto reversed = currentChunk - (chunk_pos - m_LastChunkPosition);
+				reversed.y = chunk_pos.y;
 				chunk->LoadPosition(reversed);
 			}
 		}
