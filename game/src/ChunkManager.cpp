@@ -3,11 +3,11 @@
 #include "ChunkManager.h"
 #include <glm/ext/matrix_transform.hpp>
 
-ChunkManager::ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm::vec3 currentChunk):
+ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm::vec3 currentChunk):
 	m_Renderer(renderer),
 	m_GameConfiguration(gameConf),
 	m_ChunkCount(CalculateChunkCount()),
-	m_Chunks(new Chunk* [m_ChunkCount] {nullptr}),
+	m_Chunks(new Chunk*[m_ChunkCount]{nullptr}),
 	//m_ChunkThread(&ChunkManager::RunChunkLoader, this),
 	m_ShouldUpdateChunks(false),
 	m_Running(true),
@@ -15,7 +15,9 @@ ChunkManager::ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm:
 	m_CurrentChunk(currentChunk),
 	m_ChunkCV()
 {
-	const auto starting_chunk = m_LastChunkPosition - glm::vec3(m_GameConfiguration->chunkRenderDistance, m_GameConfiguration->chunkRenderHeight, m_GameConfiguration->chunkRenderDistance);
+	const auto starting_chunk = m_LastChunkPosition - glm::vec3(m_GameConfiguration->chunkRenderDistance,
+	                                                            m_GameConfiguration->chunkRenderHeight,
+	                                                            m_GameConfiguration->chunkRenderDistance);
 	const auto chunk_height = 1 + 2 * m_GameConfiguration->chunkRenderHeight;
 	// first setup of chunks, initialize m_LastChunkPosition
 	// we want to create chunks from the closest to the player and away.
@@ -27,22 +29,60 @@ ChunkManager::ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm:
 	glGenBuffers(m_ChunkCount, vb_array);
 	glGenBuffers(m_ChunkCount, ib_array);
 	glGenVertexArrays(m_ChunkCount, vao_array);
-	for (auto z = 0; z < chunk_width; z++)
+	// we should create the chunks from the closest to the player to the furthest.
+	// we can do a for loop and iterate over all the distances from 0 to min(chunkRenderHeight, chunkRenderDistance)
+	// then, in iteration i, create all the chunks that are in the i^3 cube but not in the (i-1)^3 cube.
+	// we can do it by iterating over the top to bottom face, if we are in the first or last faces, draw all the inside.
+	// else, iterate over the whole lines, if we are in the first or last lines, create all, else,
+	// create the first and last chunks in the line.
+	// afterwards, we should iterate over the reminding faces (depends on what was min(chunkRenderHeight, chunkRenderDistanec)
+	// and fill them in the array from clothest to furthest.
+	int radius = m_GameConfiguration->chunkRenderDistance;
+	int height = m_GameConfiguration->chunkRenderHeight;
+	auto index = 0;
+	for (auto d = 0; d <= radius; d++)
 	{
-		for (auto y = 0; y < chunk_height; y++)
+		// faces from top to bottom - y
+		for (int y = -height; y <= height; y++)
 		{
-			for (auto x = 0; x < chunk_width; x++)
+			// lines from left to right - x
+			for (auto x = -d; x <= d; x++)
 			{
-				const int i = x + y * chunk_width + z * chunk_width * chunk_height;
-				m_Chunks[i] = 
-					new Chunk(glm::vec3(x + starting_chunk.x, y + starting_chunk.y, z + starting_chunk.z), 
-						new VertexArray(vao_array[i]),
-						new VertexBuffer(vb_array[i]), 
-						new IndexBuffer(ib_array[i]));
+				if (glm::abs(x) == d)
+				{
+					for (auto z = -d; z <= d; z++)
+					{
+						m_Chunks[index] = new Chunk(
+							glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
+							          z + m_LastChunkPosition.z),
+							new VertexArray(vao_array[index]),
+							new VertexBuffer(vb_array[index]),
+							new IndexBuffer(ib_array[index]));
+						index++;
+					}
+				}
+				else
+				{
+					m_Chunks[index] = new Chunk(
+						glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
+						          -d + m_LastChunkPosition.z),
+						new VertexArray(vao_array[index]),
+						new VertexBuffer(vb_array[index]),
+						new IndexBuffer(ib_array[index]));
+					index++;
+
+					m_Chunks[index] = new Chunk(
+						glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
+						          d + m_LastChunkPosition.z),
+						new VertexArray(vao_array[index]),
+						new VertexBuffer(vb_array[index]),
+						new IndexBuffer(ib_array[index]));
+					index++;
+				}
 			}
 		}
 	}
-	std::cout << "finished loading " << m_ChunkCount <<" chunks!";
+	std::cout << "finished loading " << m_ChunkCount << " chunks!";
 }
 
 ChunkManager::~ChunkManager()
@@ -64,10 +104,10 @@ void ChunkManager::Draw()
 	blockShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
 	for (size_t i = 0; i < m_ChunkCount; i++)
 	{
-		auto chunk = m_Chunks[i];
-		if (chunk != nullptr && 
-			chunk->GetVisibleBlocksCount() != 0 && 
-			m_Renderer->GetFrustrum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT)) 
+		auto* chunk = m_Chunks[i];
+		if (chunk != nullptr &&
+			chunk->GetVisibleBlocksCount() != 0 &&
+			m_Renderer->GetFrustrum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT))
 		{
 			auto model = translate(glm::mat4(1.0), chunk->GetPositionWorldSpace());
 			auto mvp = m_Renderer->m_ViewProjection * model;
@@ -90,7 +130,8 @@ void ChunkManager::SetCurrenChunk(glm::vec3 currentChunk)
 		m_CurrentChunk = currentChunk;
 		m_ShouldUpdateChunks = true;
 		m_ChunkCV.notify_all();
-		std::cout << "Player has moved chunk! x:" << currentChunk.x << " y:" << currentChunk.y << " z:" << currentChunk.z <<"\n";
+		std::cout << "Player has moved chunk! x:" << currentChunk.x << " y:" << currentChunk.y << " z:" << currentChunk.
+			z << "\n";
 	}
 }
 
@@ -101,20 +142,23 @@ uint32_t ChunkManager::CalculateChunkCount()
 	return range * range * height;
 }
 
-void ChunkManager::RunChunkLoader() {
-	while (m_Running) {
+void ChunkManager::RunChunkLoader()
+{
+	while (m_Running)
+	{
 		//aquire the lock, check if we should update chunks, and if not, wait untill we do.
 		glm::vec3 currentChunk;
 		{
 			std::unique_lock<std::mutex> lk(m_ChunksLock);
-			if (!m_ShouldUpdateChunks) {
+			if (!m_ShouldUpdateChunks)
+			{
 				m_ChunkCV.wait(lk);
 			}
 			currentChunk = m_CurrentChunk;
 			m_ShouldUpdateChunks = false;
 		}
-		const auto chunk_dist = m_GameConfiguration->chunkRenderDistance, 
-			chunk_height = m_GameConfiguration->chunkRenderHeight;
+		const auto chunk_dist = m_GameConfiguration->chunkRenderDistance,
+		           chunk_height = m_GameConfiguration->chunkRenderHeight;
 		for (size_t i = 0; i < m_ChunkCount; i++)
 		{
 			auto* const chunk = m_Chunks[i];
@@ -124,7 +168,8 @@ void ChunkManager::RunChunkLoader() {
 				chunk_pos.z < currentChunk.z - chunk_dist ||
 				chunk_pos.z > currentChunk.z + chunk_dist ||
 				chunk_pos.y < currentChunk.y - chunk_height ||
-				chunk_pos.y > currentChunk.y + chunk_height) {
+				chunk_pos.y > currentChunk.y + chunk_height)
+			{
 				// chunk is out side of render area.
 				// if the chunk at position 'p' relativly to the player last position is now out of render area,
 				// the chunk at position '-p' relativly to the player current  position must be in the render area.
@@ -139,4 +184,3 @@ void ChunkManager::RunChunkLoader() {
 	}
 	// save and close
 }
-

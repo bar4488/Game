@@ -37,7 +37,7 @@ Game::Game(int width, int height) :
 	m_TicksPerSecond(60),
 	m_Window(SetupGraphics()),
 	m_Renderer(width, height),
-	m_Configuration{5u,0u,width,height,m_Window}
+	m_Configuration{11u,0u,width,height,m_Window}
 {
 }
 
@@ -63,7 +63,8 @@ void Game::Run() {
 
 		if(seconds_lag.count() > 1000000000)
 		{
-			std::cout << "current fps: " << 1000000000 / timer::average(fps_handle).count() << std::endl;
+			//std::cout << "current fps: " << 1000000000 / timer::average(fps_handle).count() << std::endl;
+			std::cout << "current mpf: " << timer::average(fps_handle).count() / 1000000 << std::endl;
 			timer::reset(fps_handle);
 			seconds_lag = 0ns;
 		}
