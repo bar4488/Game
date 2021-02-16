@@ -38,12 +38,15 @@ Game::Game(int width, int height) :
 	m_TicksPerSecond(60),
 	m_Window(SetupGraphics()),
 	m_Renderer(width, height),
+	t_pressed(false),
+	full_ratio(true),
+	viewport_ratio(1.0f),
 	m_Configuration{1u,0u,width,height,m_Window}
 {
 }
 
 void Game::Run() {
-	glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glfwSwapInterval(0);
 
 	// Initialize World
@@ -79,9 +82,9 @@ void Game::Run() {
 				glfwSetWindowShouldClose(m_Window, 1);
 			}
 			auto f_state = glfwGetKey(m_Window, GLFW_KEY_F);
-			// TODO: implement keypress system
-			/*
-			if (f_state == GLFW_PRESS) {
+			auto t_state = glfwGetKey(m_Window, GLFW_KEY_T);
+			if (f_state == GLFW_PRESS && f_pressed == false) {
+				f_pressed = true;
 				if (m_Fullscreen) {
 					glfwSetWindowMonitor(m_Window, nullptr, 0,0,m_Width, m_Height, 60);
 					m_Fullscreen = false;
@@ -91,12 +94,40 @@ void Game::Run() {
 					m_Fullscreen = true;
 				}
 			}
-			*/
+			if(f_state == GLFW_RELEASE && f_pressed)
+			{
+				f_pressed = false;
+			}
+			if (t_state == GLFW_PRESS && t_pressed == false) {
+				t_pressed = true;
+				full_ratio = !full_ratio;
+			}
+			if(t_state == GLFW_RELEASE && t_pressed)
+			{
+				t_pressed = false;
+			}
+			if(full_ratio)
+			{
+				if(viewport_ratio <1.0f)
+				{
+					viewport_ratio += 0.01f;
+				}
+			}
+			if(!full_ratio)
+			{
+				if(viewport_ratio > 0.8f)
+				{
+					viewport_ratio -= 0.01f;
+				}
+			}
 			world->Update();
 			lag = std::chrono::nanoseconds(0ns);
 		}
+		glViewport(0, 0, m_Width * viewport_ratio, m_Height * viewport_ratio);
 		world->Draw();
-		m_Renderer.DrawText("arial", "FPS: " + std::to_string(current_fps), 1.0f, glm::vec2(10, 10), glm::vec3(0,0,0));
+		glViewport(0, 0, m_Width, m_Height);
+		if(viewport_ratio < 1.0f)
+		m_Renderer.DrawText("arial", "FPS: " + std::to_string(current_fps), 1.0f, glm::vec2(m_Width * viewport_ratio, 10), glm::vec3(1.0f,1.0f,1.0f));
 		glfwSwapBuffers(m_Window);
 	}
 	glfwTerminate();

@@ -25,6 +25,10 @@ private:
     int m_Height, m_Width, m_TicksPerSecond;
     bool m_InGame;
     bool m_Fullscreen;
+    bool t_pressed;
+    bool full_ratio;
+    bool f_pressed;
+    float viewport_ratio;
     GLFWwindow *m_Window;
     World *world;
     Renderer m_Renderer;
