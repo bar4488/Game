@@ -102,6 +102,7 @@ void ChunkManager::Draw()
 	blockShader->SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
 	blockShader->SetUniformVec3("viewPos", m_Renderer->m_CameraPosition);
 	blockShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
+	unsigned int renderedCount = 0;
 	for (size_t i = 0; i < m_ChunkCount; i++)
 	{
 		auto* chunk = m_Chunks[i];
@@ -109,6 +110,7 @@ void ChunkManager::Draw()
 			chunk->GetVisibleBlocksCount() != 0 &&
 			m_Renderer->GetFrustum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT))
 		{
+			renderedCount++;
 			auto model = translate(glm::mat4(1.0), chunk->GetPositionWorldSpace());
 			auto mvp = m_Renderer->m_ViewProjection * model;
 			blockShader->SetUniformMatrix4fv("MVP", 1, GL_FALSE, &mvp[0][0]);
@@ -116,6 +118,7 @@ void ChunkManager::Draw()
 			chunk->Draw(m_Renderer);
 		}
 	}
+	m_RenderedChunksCount = renderedCount;
 }
 
 void ChunkManager::Update()

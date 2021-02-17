@@ -13,6 +13,8 @@ public:
     void Draw();
     void Update();
     void SetCurrenChunk(glm::vec3 currentChunk);
+    uint32_t GetChunkCount();
+    uint32_t GetRenderedChunksCount();
 private:
     void RunChunkLoader();
     uint32_t CalculateChunkCount();
@@ -20,6 +22,7 @@ private:
     Renderer *m_Renderer;
     GameConfiguration *m_GameConfiguration;
     uint32_t m_ChunkCount;
+    uint32_t m_RenderedChunksCount;
 	Chunk** m_Chunks;
     bool m_ShouldUpdateChunks;
     bool m_Running;
@@ -30,3 +33,12 @@ private:
     std::condition_variable m_ChunkCV;
 };
 
+inline uint32_t ChunkManager::GetChunkCount()
+{
+	return m_ChunkCount;
+}
+
+inline uint32_t ChunkManager::GetRenderedChunksCount()
+{
+	return m_RenderedChunksCount;
+}

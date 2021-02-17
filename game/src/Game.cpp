@@ -61,7 +61,7 @@ void Game::Run() {
 	const auto fps_handle = timer::start();
 	auto lag = timestamp;
 	auto seconds_lag = timestamp;
-	int current_fps = 0;
+	int current_fps = 60;
 	while (!glfwWindowShouldClose(m_Window)) {
 		const auto d_time = timer::lap(fps_handle);
 		lag += d_time;
@@ -127,7 +127,12 @@ void Game::Run() {
 		world->Draw();
 		glViewport(0, 0, m_Width, m_Height);
 		if(viewport_ratio < 1.0f)
-		m_Renderer.DrawText("arial", "FPS: " + std::to_string(current_fps), 1.0f, glm::vec2(m_Width * viewport_ratio, 10), glm::vec3(1.0f,1.0f,1.0f));
+		{
+			m_Renderer.DrawText("arial", "FPS: " + std::to_string(current_fps), 1.0f, glm::vec2(m_Width * viewport_ratio, 10), glm::vec3(1.0f,1.0f,1.0f));
+			m_Renderer.DrawText("arial", "Ms. per frame: " + std::to_string(1000 / current_fps), 1.0f, glm::vec2(m_Width * viewport_ratio, 60), glm::vec3(1.0f,1.0f,1.0f));
+			m_Renderer.DrawText("arial", "L. Chunks: " + std::to_string(world->m_ChunkMgr.GetChunkCount()), 1.0f, glm::vec2(m_Width * viewport_ratio, 110), glm::vec3(1.0f,1.0f,1.0f));
+			m_Renderer.DrawText("arial", "R. Chunks: " + std::to_string(world->m_ChunkMgr.GetRenderedChunksCount()), 1.0f, glm::vec2(m_Width * viewport_ratio, 160), glm::vec3(1.0f,1.0f,1.0f));
+		}
 		glfwSwapBuffers(m_Window);
 	}
 	glfwTerminate();

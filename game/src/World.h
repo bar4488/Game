@@ -9,6 +9,7 @@
 #include "decor/Skybox.h"
 #include "decor/Crosshair.h"
 
+class Game;
 
 class World
 {
@@ -28,5 +29,7 @@ private:
     ChunkManager m_ChunkMgr;
     Skybox m_Skybox;
     Crosshair m_Crosshair;
+
+    friend class Game;
 };
 
