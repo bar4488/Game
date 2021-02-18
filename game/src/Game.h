@@ -12,27 +12,31 @@
 #include "Player.h"
 #include "World.h"
 #include "Configuration.h"
+#include "utils/keyboard/KeyboardMgr.h"
 
 class Game {
 public:
     Game(int width, int height);
     ~Game();
     void Run();
-    GLFWwindow* SetupGraphics();
     void Update();
     void Draw();
 private:
     int m_Height, m_Width, m_TicksPerSecond;
-    bool m_InGame;
+    bool m_InGame{};
     bool m_Fullscreen;
     bool t_pressed;
     bool full_ratio;
-    bool f_pressed;
+    bool f_pressed{};
     float viewport_ratio;
     GLFWwindow *m_Window;
-    World *world;
+    World *world{};
     Renderer m_Renderer;
+    KeyboardMgr m_KeyboardMgr;
     GameConfiguration m_Configuration;
+private:
+    void ProcessEvents();
+    GLFWwindow* SetupGraphics();
 };
 
 

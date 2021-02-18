@@ -21,16 +21,6 @@
 
 using namespace std;
 
-void APIENTRY openglCallbackFunction(GLenum source,
-	GLenum type,
-	GLuint id,
-	GLenum severity,
-	GLsizei length,
-	const GLchar* message,
-	const void* userParam);
-
-static void error_callback(int error, const char* description);
-
 Game::Game(int width, int height) :
 	m_Width(width),
 	m_Height(height),
@@ -38,10 +28,11 @@ Game::Game(int width, int height) :
 	m_TicksPerSecond(60),
 	m_Window(SetupGraphics()),
 	m_Renderer(width, height),
+	m_KeyboardMgr(m_Window, true),
 	t_pressed(false),
 	full_ratio(true),
 	viewport_ratio(1.0f),
-	m_Configuration{1u,0u,width,height,m_Window}
+	m_Configuration{10u, 0u, width, height, m_Window}
 {
 }
 
@@ -76,15 +67,8 @@ void Game::Run() {
 			seconds_lag = 0ns;
 		}
 		if (lag >= timestamp) {
-			glfwPollEvents();
-			const auto escape_state = glfwGetKey(m_Window, GLFW_KEY_ESCAPE);
-			if (escape_state == GLFW_PRESS) {
-				glfwSetWindowShouldClose(m_Window, 1);
-			}
-			auto f_state = glfwGetKey(m_Window, GLFW_KEY_F);
-			auto t_state = glfwGetKey(m_Window, GLFW_KEY_T);
-			if (f_state == GLFW_PRESS && f_pressed == false) {
-				f_pressed = true;
+			ProcessEvents();
+			if (m_KeyboardMgr.IsPressStarted(GLFW_KEY_F)) {
 				if (m_Fullscreen) {
 					glfwSetWindowMonitor(m_Window, nullptr, 0,0,m_Width, m_Height, 60);
 					m_Fullscreen = false;
@@ -94,17 +78,8 @@ void Game::Run() {
 					m_Fullscreen = true;
 				}
 			}
-			if(f_state == GLFW_RELEASE && f_pressed)
-			{
-				f_pressed = false;
-			}
-			if (t_state == GLFW_PRESS && t_pressed == false) {
-				t_pressed = true;
+			if (m_KeyboardMgr.IsPressStarted(GLFW_KEY_T)) {
 				full_ratio = !full_ratio;
-			}
-			if(t_state == GLFW_RELEASE && t_pressed)
-			{
-				t_pressed = false;
 			}
 			if(full_ratio)
 			{
@@ -138,6 +113,38 @@ void Game::Run() {
 	glfwTerminate();
 	std::cout << "done!" << std::endl;
 }
+
+
+void Game::Update() {
+}
+
+void Game::Draw() {
+}
+
+void Game::ProcessEvents()
+{
+	m_KeyboardMgr.BeginUpdate();
+	glfwPollEvents();
+	m_KeyboardMgr.Update();
+	const auto escape_state = glfwGetKey(m_Window, GLFW_KEY_ESCAPE);
+	if (escape_state == GLFW_PRESS) {
+		glfwSetWindowShouldClose(m_Window, 1);
+	}
+
+}
+
+Game::~Game() = default;
+
+void APIENTRY openglCallbackFunction(GLenum source,
+	GLenum type,
+	GLuint id,
+	GLenum severity,
+	GLsizei length,
+	const GLchar* message,
+	const void* userParam);
+
+static void error_callback(int error, const char* description);
+
 
 GLFWwindow* Game::SetupGraphics() {
 	glfwSetErrorCallback(error_callback);
@@ -212,14 +219,6 @@ GLFWwindow* Game::SetupGraphics() {
 
 	return window;
 }
-
-void Game::Update() {
-}
-
-void Game::Draw() {
-}
-
-Game::~Game() = default;
 
 void APIENTRY openglCallbackFunction(GLenum source,
 	GLenum type,

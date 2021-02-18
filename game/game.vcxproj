@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\utils\keyboard\KeyboardMgr.cpp" />
     <ClCompile Include="src\decor\Crosshair.cpp" />
     <ClCompile Include="src\ChunkManager.cpp" />
     <ClCompile Include="src\decor\Skybox.cpp" />
@@ -163,6 +164,7 @@
     <ClCompile Include="src\graphics\Renderer.cpp" />
     <ClCompile Include="src\graphics\Program.cpp" />
     <ClCompile Include="src\graphics\Texture.cpp" />
+    <ClCompile Include="src\graphics\TextureBuffer.cpp" />
     <ClCompile Include="src\graphics\VertexArray.cpp" />
     <ClCompile Include="src\graphics\VertexBuffer.cpp" />
     <ClCompile Include="src\graphics\VertexBufferLayout.cpp" />
@@ -176,6 +178,7 @@
     <ClCompile Include="src\World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\utils\keyboard\KeyboardMgr.h" />
     <ClInclude Include="src\decor\Crosshair.h" />
     <ClInclude Include="src\ChunkManager.h" />
     <ClInclude Include="src\decor\Skybox.h" />
@@ -188,6 +191,7 @@
     <ClInclude Include="src\graphics\Renderer.h" />
     <ClInclude Include="src\graphics\Program.h" />
     <ClInclude Include="src\graphics\Texture.h" />
+    <ClInclude Include="src\graphics\TextureBuffer.h" />
     <ClInclude Include="src\graphics\VertexArray.h" />
     <ClInclude Include="src\graphics\VertexBuffer.h" />
     <ClInclude Include="src\graphics\VertexBufferLayout.h" />

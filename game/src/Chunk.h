@@ -11,36 +11,51 @@
 #include "graphics/VertexBuffer.h"
 #include "graphics/IndexBuffer.h"
 #include "graphics/Renderer.h"
+#include "graphics/TextureBuffer.h"
 
 static const unsigned int CHUNK_SIZE = 16;
-static const unsigned int CHUNK_HEIGHT = 16;
+static const unsigned int CHUNK_HEIGHT = 64;
+
+enum face_dir : unsigned char
+{
+	up,
+	down,
+	right,
+	left,
+	forward,
+	backward	
+};
+struct block_face
+{
+    glm::tvec3<unsigned char> position; // 3 bytes
+    face_dir direction; // byte
+    unsigned char texture; // byte
+}; // 5 bytes
 
 class Chunk {
 public:
     explicit Chunk(glm::vec3 position);
-    explicit Chunk(glm::vec3 position, VertexArray *vao, VertexBuffer *vb, IndexBuffer *ib);
-    unsigned int GetIndicesCount();
-    void CalculateIndices();
-    void CalculateVisibleVertices();
+    explicit Chunk(glm::vec3 position, VertexArray *vao);
     void LoadPosition(glm::vec3 position);
+    void CalculateMesh();
     glm::vec3 GetPositionChunkSpace();
     glm::vec3 GetPositionWorldSpace();
     glm::vec3 GetCenterWorldSpace();
-    unsigned int GetVisibleBlocksCount();
+    unsigned int GetVisibleFacesCount();
     void Bind();
     void Unbind();
     ~Chunk();
 public:
     bool m_Active;
 private:
+    void InitializeChunk();
     void Draw(Renderer* renderer);
 private:
     glm::vec3 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
-    std::vector<uint32_t> m_VisibleBlocks;
-    IndexBuffer m_IndexBuffer;
-    VertexBuffer m_VertexBuffer;
+    std::vector<block_face> m_VisibleFaces;
     VertexArray m_VertexArray;
+    TextureBuffer m_TextureBuffer;
     friend class ChunkManager;
 };
 

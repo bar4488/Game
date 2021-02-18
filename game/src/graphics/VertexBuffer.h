@@ -2,9 +2,7 @@
 // Created by bar44 on 10/29/2020.
 //
 
-#ifndef GOME_VERTEXBUFFER_H
-#define GOME_VERTEXBUFFER_H
-
+#pragma once
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
@@ -24,6 +22,3 @@ public:
     void Bind() const;
     void Unbind();
 };
-
-
-#endif //GOME_VERTEXBUFFER_H

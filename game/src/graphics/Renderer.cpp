@@ -128,5 +128,4 @@ Frustum& Renderer::GetFrustum()
 }
 
 Renderer::~Renderer() {
-	m_Textures.erase(m_Textures.begin());
 }

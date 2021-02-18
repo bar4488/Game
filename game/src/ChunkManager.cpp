@@ -54,10 +54,8 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 					{
 						m_Chunks[index] = new Chunk(
 							glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
-							          z + m_LastChunkPosition.z),
-							new VertexArray(vao_array[index]),
-							new VertexBuffer(vb_array[index]),
-							new IndexBuffer(ib_array[index]));
+								z + m_LastChunkPosition.z),
+							new VertexArray(vao_array[index]));
 						index++;
 					}
 				}
@@ -65,18 +63,14 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 				{
 					m_Chunks[index] = new Chunk(
 						glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
-						          -d + m_LastChunkPosition.z),
-						new VertexArray(vao_array[index]),
-						new VertexBuffer(vb_array[index]),
-						new IndexBuffer(ib_array[index]));
+							-d + m_LastChunkPosition.z),
+						new VertexArray(vao_array[index]));
 					index++;
 
 					m_Chunks[index] = new Chunk(
 						glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
-						          d + m_LastChunkPosition.z),
-						new VertexArray(vao_array[index]),
-						new VertexBuffer(vb_array[index]),
-						new IndexBuffer(ib_array[index]));
+							d + m_LastChunkPosition.z),
+						new VertexArray(vao_array[index]));
 					index++;
 				}
 			}
@@ -102,12 +96,13 @@ void ChunkManager::Draw()
 	blockShader->SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
 	blockShader->SetUniformVec3("viewPos", m_Renderer->m_CameraPosition);
 	blockShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
+	blockShader->SetUniform1i("faces", 2);
 	unsigned int renderedCount = 0;
 	for (size_t i = 0; i < m_ChunkCount; i++)
 	{
 		auto* chunk = m_Chunks[i];
 		if (chunk != nullptr &&
-			chunk->GetVisibleBlocksCount() != 0 &&
+			chunk->GetVisibleFacesCount() != 0 &&
 			m_Renderer->GetFrustum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT))
 		{
 			renderedCount++;

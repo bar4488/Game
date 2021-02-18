@@ -27,11 +27,6 @@ void World::Draw()
 	m_ChunkMgr.Draw();
 	m_Skybox.Draw();
 	m_Crosshair.Draw();
-	int state = glfwGetKey(m_GameConfiguration->window, GLFW_KEY_F);
-	if(state == GLFW_PRESS)
-	{
-		m_Renderer->DrawText("arial", "minecraft", 1.0f, glm::vec2(100, 100), glm::vec3(1.0, 0.4, 0.4));
-	}
 	m_Renderer->EndDraw(m_Player.GetViewDirection());
 }
 

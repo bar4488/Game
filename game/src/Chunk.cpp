@@ -15,152 +15,93 @@
 #include "graphics/IndexBuffer.h"
 #include "constants.h"
 
-Chunk::Chunk(glm::vec3 position, VertexArray *vao, VertexBuffer *vb, IndexBuffer *ib)
-	: m_Position(position),
+Chunk::Chunk(glm::vec3 position, VertexArray *vao):
 	m_VertexArray(*vao),
-	m_VertexBuffer(*vb),
-	m_IndexBuffer(*ib),
-	m_VisibleBlocks()
+	m_TextureBuffer(GL_R8UI)
 {
-	srand((unsigned)time(0));
-	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
-		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
-			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = rand() % 5 == 1 ? 1 : 0;
-			}
-		}
-	}
-
-	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
-		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
-			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
-				if (x == 0 || y == 0 || z == 0 || x == CHUNK_SIZE - 1 || y == CHUNK_HEIGHT - 1 || z == CHUNK_SIZE - 1 ||
-					m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x + (y + 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x + y * CHUNK_SIZE + (z + 1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x + y * CHUNK_SIZE + (z - 1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-					m_VisibleBlocks.push_back(x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT);
-				}
-
-			}
-		}
-	}
-
-	// we should load the chunk data to the gpu.
-	// compute all the needed triangles
-	CalculateIndices();
+	LoadPosition(position);
 }
-Chunk::Chunk(glm::vec3 position)
-	: m_Position(position),
+Chunk::Chunk(glm::vec3 position):
 	m_VertexArray(),
-	m_VertexBuffer(),
-	m_IndexBuffer()
+	m_TextureBuffer(GL_R8UI)
 {
-	srand((unsigned)time(0));
-	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
-		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
-			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = rand() % 5 == 1 ? 1 : 0;
-			}
-		}
-	}
-
-	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
-		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
-			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
-				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
-				if (x == 0 || y == 0 || z == 0 || x == CHUNK_SIZE - 1 || y == CHUNK_HEIGHT - 1 || z == CHUNK_SIZE - 1 ||
-					m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x + (y + 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x + y * CHUNK_SIZE + (z + 1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0 ||
-					m_ChunkData[x + y * CHUNK_SIZE + (z - 1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-					m_VisibleBlocks.push_back(x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT);
-				}
-
-			}
-		}
-	}
-
-	// we should load the chunk data to the gpu.
-	// compute all the needed triangles
-	CalculateIndices();
-}
-
-void AppendVertices(std::vector<ChunkVertex> &face, int index, glm::tvec3<unsigned char> xyz) {
-		for (int i = 0; i < 4; ++i) {
-			face.push_back({
-					cube_vertices[index + i].position + xyz,
-					cube_vertices[index + i].uv,
-					cube_vertices[index + i].normal
-				});
-		}
-}
-void AppendIndices(std::vector<unsigned int>& indices, int offset, const GLuint* indxs) {
-	for (int i = 0; i < 6; i++)
-	{
-		indices.push_back(indxs[i] + offset);
-	}
-}
-
-void Chunk::CalculateIndices() {
-    std::vector<ChunkVertex> v_vertices;
-    std::vector<GLuint> v_indices;
-	for (auto &index : m_VisibleBlocks) {
-		auto x = index % CHUNK_SIZE;
-		auto y = (index / CHUNK_SIZE) % CHUNK_HEIGHT;
-		auto z = (index / (CHUNK_SIZE * CHUNK_HEIGHT)) % CHUNK_SIZE;
-		if (x == 0 || m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-			// Add left side.
-			AppendIndices(v_indices, v_vertices.size(), &left_indices[0]);
-			AppendVertices(v_vertices, 12, glm::tvec3<unsigned char>(x, y, z));
-		}
-		if (x == CHUNK_SIZE - 1 || m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-			// Add right side.
-			AppendIndices(v_indices, v_vertices.size(), &right_indices[0]);
-			AppendVertices(v_vertices, 0, glm::tvec3<unsigned char>(x, y, z));
-		}
-		if (y == 0 || m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-			// Add down side.
-			AppendIndices(v_indices, v_vertices.size(), &down_indices[0]);
-			AppendVertices(v_vertices, 16, glm::tvec3<unsigned char>(x, y, z));
-		}
-		if (y == CHUNK_HEIGHT - 1 || m_ChunkData[x + (y+1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-			// Add up side.
-			AppendIndices(v_indices, v_vertices.size(), &up_indices[0]);
-			AppendVertices(v_vertices, 4, glm::tvec3<unsigned char>(x, y, z));
-		}
-		if (z == 0 || m_ChunkData[x + y * CHUNK_SIZE + (z-1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-			// Add backward side.
-			AppendIndices(v_indices, v_vertices.size(), &back_indices[0]);
-			AppendVertices(v_vertices, 20, glm::tvec3<unsigned char>(x, y, z));
-		}
-		if (z == CHUNK_SIZE - 1 || m_ChunkData[x + y * CHUNK_SIZE + (z+1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
-			// Add forward side.
-			AppendIndices(v_indices, v_vertices.size(), &front_indices[0]);
-			AppendVertices(v_vertices, 8, glm::tvec3<unsigned char>(x, y, z));
-		}
-	}
-	VertexBufferLayout vl;
-	m_VertexBuffer.SetData(&v_vertices.front(), sizeof(ChunkVertex) * v_vertices.size(), GL_DYNAMIC_DRAW);
-	m_IndexBuffer.SetData(&v_indices.front(), v_indices.size(), GL_UNSIGNED_INT, GL_DYNAMIC_DRAW);
-	vl.Push<unsigned char>(3, 0);
-	vl.Push<unsigned char>(2, 2);
-	vl.Push<char>(3, 3);
-	m_VertexArray.AddBuffer(m_VertexBuffer, vl);
-}
-
-void Chunk::CalculateVisibleVertices() {
-
+	LoadPosition(position);
 }
 
 void Chunk::LoadPosition(glm::vec3 position)
 {
 	m_Position = position;
+	srand((unsigned)time(0));
+	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
+			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+				m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = 1;
+			}
+		}
+	}
+
+	CalculateMesh();
+}
+
+void Chunk::CalculateMesh()
+{
+	for (unsigned char x = 0; x < CHUNK_SIZE; x++) {
+		for (unsigned char y = 0; y < CHUNK_HEIGHT; y++) {
+			for (unsigned char z = 0; z < CHUNK_SIZE; z++) {
+				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
+				if (x == 0 || m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+					// Add left side.
+					m_VisibleFaces.push_back({
+						glm::tvec3<unsigned char>(x,y,z),
+						left,
+						1u
+						});
+				}
+				if (x == CHUNK_SIZE - 1 || m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+					// Add right side.
+					m_VisibleFaces.push_back({
+						glm::tvec3<unsigned char>(x,y,z),
+						right,
+						1u
+						});
+				}
+				if (y == 0 || m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+					// Add down side.
+					m_VisibleFaces.push_back({
+						glm::tvec3<unsigned char>(x,y,z),
+						down,
+						1u
+						});
+				}
+				if (y == CHUNK_HEIGHT - 1 || m_ChunkData[x + (y+1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+					// Add up side.
+					m_VisibleFaces.push_back({
+						glm::tvec3<unsigned char>(x,y,z),
+						up,
+						1u
+						});
+				}
+				if (z == 0 || m_ChunkData[x + y * CHUNK_SIZE + (z-1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+					// Add backward side.
+					m_VisibleFaces.push_back({
+						glm::tvec3<unsigned char>(x,y,z),
+						backward,
+						1u
+						});
+				}
+				if (z == CHUNK_SIZE - 1 || m_ChunkData[x + y * CHUNK_SIZE + (z+1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+					// Add forward side.
+					m_VisibleFaces.push_back({
+						glm::tvec3<unsigned char>(x,y,z),
+						forward,
+						1u
+						});
+				}
+			}
+		}
+	}
+
+	m_TextureBuffer.SetData(&m_VisibleFaces.front(), m_VisibleFaces.size() * sizeof(block_face), GL_STATIC_DRAW);
 }
 
 glm::vec3 Chunk::GetPositionChunkSpace()
@@ -172,6 +113,11 @@ glm::vec3 Chunk::GetCenterWorldSpace() {
 	return GetPositionWorldSpace() + glm::vec3(CHUNK_SIZE / 2, CHUNK_HEIGHT / 2, CHUNK_SIZE / 2);
 }
 
+unsigned Chunk::GetVisibleFacesCount()
+{
+	return m_VisibleFaces.size();
+}
+
 glm::vec3 Chunk::GetPositionWorldSpace()
 {
 	return glm::vec3(Chunk::m_Position.x * CHUNK_SIZE, 
@@ -179,31 +125,26 @@ glm::vec3 Chunk::GetPositionWorldSpace()
 		Chunk::m_Position.z * CHUNK_SIZE);
 }
 
-unsigned int Chunk::GetVisibleBlocksCount()
-{
-	return m_VisibleBlocks.size();
-}
-
 void Chunk::Bind()
 {
 	m_VertexArray.Bind();
-	m_IndexBuffer.Bind();
 }
 
 void Chunk::Unbind()
 {
 	m_VertexArray.Unbind();
-	m_VertexBuffer.Unbind();
-	m_IndexBuffer.Unbind();
 }
-unsigned int Chunk::GetIndicesCount()
+
+void Chunk::InitializeChunk()
 {
-	return m_IndexBuffer.GetCount();
 }
 
 void Chunk::Draw(Renderer* renderer)
 {
-	renderer->DrawElements(m_VertexArray, m_IndexBuffer);
+	// TODO: implement draw with faces
+	m_TextureBuffer.Bind(2);
+	m_VertexArray.Bind();
+	glDrawArrays(GL_TRIANGLES, 0, m_VisibleFaces.size() * 6);
 }
 ;
 
