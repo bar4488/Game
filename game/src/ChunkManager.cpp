@@ -13,6 +13,7 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 	m_Running(true),
 	m_LastChunkPosition(currentChunk),
 	m_CurrentChunk(currentChunk),
+	m_Noise(5),
 	m_ChunkCV()
 {
 	const auto starting_chunk = m_LastChunkPosition - glm::vec3(m_GameConfiguration->chunkRenderDistance,
@@ -53,8 +54,9 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 					for (auto z = -d; z <= d; z++)
 					{
 						m_Chunks[index] = new Chunk(
+							m_Noise,
 							glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
-								z + m_LastChunkPosition.z),
+							          z + m_LastChunkPosition.z),
 							new VertexArray(vao_array[index]));
 						index++;
 					}
@@ -62,14 +64,16 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 				else
 				{
 					m_Chunks[index] = new Chunk(
+						m_Noise,
 						glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
-							-d + m_LastChunkPosition.z),
+						          -d + m_LastChunkPosition.z),
 						new VertexArray(vao_array[index]));
 					index++;
 
 					m_Chunks[index] = new Chunk(
+						m_Noise,
 						glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
-							d + m_LastChunkPosition.z),
+						          d + m_LastChunkPosition.z),
 						new VertexArray(vao_array[index]));
 					index++;
 				}
@@ -172,7 +176,6 @@ void ChunkManager::RunChunkLoader()
 				// if the chunk at position 'p' relativly to the player last position is now out of render area,
 				// the chunk at position '-p' relativly to the player current  position must be in the render area.
 				auto reversed = currentChunk - (chunk_pos - m_LastChunkPosition);
-				reversed.y = chunk_pos.y;
 				chunk->LoadPosition(reversed);
 			}
 		}

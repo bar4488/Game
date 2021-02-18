@@ -198,6 +198,7 @@
     <ClInclude Include="src\Player.h" />
     <ClInclude Include="src\utils\fonts\Font.h" />
     <ClInclude Include="src\utils\fonts\FreeType.h" />
+    <ClInclude Include="src\utils\noise\PerlinNoise.h" />
     <ClInclude Include="src\utils\timer.h" />
     <ClInclude Include="src\vendor\glm\common.hpp" />
     <ClInclude Include="src\vendor\glm\detail\compute_common.hpp" />

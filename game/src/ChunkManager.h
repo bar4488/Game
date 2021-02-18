@@ -5,6 +5,8 @@
 #include <thread>
 #include "graphics/Renderer.h"
 #include "Configuration.h"
+#include "utils/noise/PerlinNoise.h"
+
 class ChunkManager
 {
 public:
@@ -26,6 +28,7 @@ private:
 	Chunk** m_Chunks;
     bool m_ShouldUpdateChunks;
     bool m_Running;
+    siv::PerlinNoise m_Noise;
     glm::vec3 m_LastChunkPosition;
     glm::vec3 m_CurrentChunk;
     std::mutex m_ChunksLock; // lock for when we try to change shouldUpdateChunks

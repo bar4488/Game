@@ -6,12 +6,14 @@
 #define GOME_CHUNK_H
 
 
+#include <mutex>
 #include <glm/glm.hpp>
 #include "graphics/VertexArray.h"
 #include "graphics/VertexBuffer.h"
 #include "graphics/IndexBuffer.h"
 #include "graphics/Renderer.h"
 #include "graphics/TextureBuffer.h"
+#include "utils/noise/PerlinNoise.h"
 
 static const unsigned int CHUNK_SIZE = 16;
 static const unsigned int CHUNK_HEIGHT = 64;
@@ -34,8 +36,8 @@ struct block_face
 
 class Chunk {
 public:
-    explicit Chunk(glm::vec3 position);
-    explicit Chunk(glm::vec3 position, VertexArray *vao);
+    explicit Chunk(siv::PerlinNoise noise, glm::vec3 position);
+    explicit Chunk(siv::PerlinNoise noise, glm::vec3 position, VertexArray *vao);
     void LoadPosition(glm::vec3 position);
     void CalculateMesh();
     glm::vec3 GetPositionChunkSpace();
@@ -46,11 +48,15 @@ public:
     void Unbind();
     ~Chunk();
 public:
-    bool m_Active;
+    bool m_Dirty;
+    bool m_Meshed;
+    bool m_Loaded;
+    std::mutex m_Lock;
 private:
     void InitializeChunk();
     void Draw(Renderer* renderer);
 private:
+    siv::PerlinNoise m_Noise;
     glm::vec3 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
     std::vector<block_face> m_VisibleFaces;

@@ -15,15 +15,17 @@
 #include "graphics/IndexBuffer.h"
 #include "constants.h"
 
-Chunk::Chunk(glm::vec3 position, VertexArray *vao):
+Chunk::Chunk(siv::PerlinNoise noise, glm::vec3 position, VertexArray *vao):
 	m_VertexArray(*vao),
-	m_TextureBuffer(GL_R8UI)
+	m_TextureBuffer(GL_R8UI),
+	m_Noise(noise)
 {
 	LoadPosition(position);
 }
-Chunk::Chunk(glm::vec3 position):
+Chunk::Chunk(siv::PerlinNoise noise, glm::vec3 position):
 	m_VertexArray(),
-	m_TextureBuffer(GL_R8UI)
+	m_TextureBuffer(GL_R8UI),
+	m_Noise(noise)
 {
 	LoadPosition(position);
 }
@@ -31,10 +33,11 @@ Chunk::Chunk(glm::vec3 position):
 void Chunk::LoadPosition(glm::vec3 position)
 {
 	m_Position = position;
-	srand((unsigned)time(0));
 	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
-		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
-			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+		for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+			double h = m_Noise.noise3D_0_1((position.x * 16 + x) / 100.0, (position.z * 16 + z) / 100.0, 0.14342);
+			unsigned int height = static_cast<unsigned>(h * CHUNK_HEIGHT);
+			for (unsigned int y = 0; y < height; y++) {
 				m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = 1;
 			}
 		}
@@ -101,7 +104,8 @@ void Chunk::CalculateMesh()
 		}
 	}
 
-	m_TextureBuffer.SetData(&m_VisibleFaces.front(), m_VisibleFaces.size() * sizeof(block_face), GL_STATIC_DRAW);
+	if(m_VisibleFaces.size() != 0)
+		m_TextureBuffer.SetData(&m_VisibleFaces.front(), m_VisibleFaces.size() * sizeof(block_face), GL_STATIC_DRAW);
 }
 
 glm::vec3 Chunk::GetPositionChunkSpace()
