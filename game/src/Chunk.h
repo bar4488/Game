@@ -36,13 +36,13 @@ struct block_face
 
 class Chunk {
 public:
-    explicit Chunk(siv::PerlinNoise noise, glm::vec3 position);
-    explicit Chunk(siv::PerlinNoise noise, glm::vec3 position, VertexArray *vao);
-    void LoadPosition(glm::vec3 position);
+    explicit Chunk(siv::PerlinNoise noise, glm::ivec3 position);
+    explicit Chunk(siv::PerlinNoise noise, glm::ivec3 position, VertexArray *vao);
+    void LoadPosition(glm::ivec3 position);
     void CalculateMesh();
-    glm::vec3 GetPositionChunkSpace();
-    glm::vec3 GetPositionWorldSpace();
-    glm::vec3 GetCenterWorldSpace();
+    glm::ivec3 GetPositionChunkSpace();
+    glm::ivec3 GetPositionWorldSpace();
+    glm::ivec3 GetCenterWorldSpace();
     unsigned int GetVisibleFacesCount();
     // basically returns the highest block
     unsigned char GetHeight();
@@ -60,7 +60,7 @@ private:
 private:
     siv::PerlinNoise m_Noise;
     unsigned char m_HeighestBlock;
-    glm::vec3 m_Position;
+    glm::ivec3 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
     std::vector<block_face> m_VisibleFaces;
     VertexArray m_VertexArray;

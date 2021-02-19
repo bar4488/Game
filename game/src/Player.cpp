@@ -69,9 +69,9 @@ glm::mat4 Player::GetViewProjection() const {
     return m_ViewProjection;
 }
 
-glm::vec3 Player::GetCurrentChunkPosition() const
+glm::ivec3 Player::GetCurrentChunkPosition() const
 {
-    return glm::vec3(floor(m_Position.x / CHUNK_SIZE), floor(m_Position.y / CHUNK_HEIGHT), floor(m_Position.z / CHUNK_SIZE));
+    return glm::ivec3(floor(m_Position.x / CHUNK_SIZE), floor(m_Position.y / CHUNK_HEIGHT), floor(m_Position.z / CHUNK_SIZE));
 }
 
 glm::vec3 Player::GetViewDirection() const

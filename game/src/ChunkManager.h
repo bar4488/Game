@@ -10,11 +10,12 @@
 class ChunkManager
 {
 public:
-    ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm::vec3 currentChunk);
+    ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm::ivec3 currentChunk);
     ~ChunkManager();
     void Draw();
     void Update();
-    void SetCurrenChunk(glm::vec3 currentChunk);
+    void SetCurrenChunk(glm::ivec3 currentChunk);
+    Chunk* GetChunkByPosition(glm::ivec3 position);
     uint32_t GetChunkCount();
     uint32_t GetRenderedChunksCount();
 private:
@@ -26,11 +27,13 @@ private:
     uint32_t m_ChunkCount;
     uint32_t m_RenderedChunksCount;
 	Chunk** m_Chunks;
+    // the other thread will modify this array, and when ready we will switch between them
+	Chunk** m_BackBufferChunks;
     bool m_ShouldUpdateChunks;
     bool m_Running;
     siv::PerlinNoise m_Noise;
-    glm::vec3 m_LastChunkPosition;
-    glm::vec3 m_CurrentChunk;
+    glm::ivec3 m_LastChunkPosition;
+    glm::ivec3 m_CurrentChunk;
     std::mutex m_ChunksLock; // lock for when we try to change shouldUpdateChunks
     std::thread m_ChunkThread;
     std::condition_variable m_ChunkCV;

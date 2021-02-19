@@ -5,7 +5,7 @@
 
 #include "utils/timer.h"
 
-ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm::vec3 currentChunk):
+ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm::ivec3 currentChunk):
 	m_Renderer(renderer),
 	m_GameConfiguration(gameConf),
 	m_ChunkCount(CalculateChunkCount()),
@@ -18,7 +18,7 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 	m_Noise(5),
 	m_ChunkCV()
 {
-	const auto starting_chunk = m_LastChunkPosition - glm::vec3(m_GameConfiguration->chunkRenderDistance,
+	const auto starting_chunk = m_LastChunkPosition - glm::ivec3(m_GameConfiguration->chunkRenderDistance,
 	                                                            m_GameConfiguration->chunkRenderHeight,
 	                                                            m_GameConfiguration->chunkRenderDistance);
 	const auto chunk_height = 1 + 2 * m_GameConfiguration->chunkRenderHeight;
@@ -58,7 +58,7 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 					{
 						m_Chunks[index] = new Chunk(
 							m_Noise,
-							glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
+							glm::ivec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
 							          z + m_LastChunkPosition.z),
 							new VertexArray(vao_array[index]));
 						index++;
@@ -68,14 +68,14 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 				{
 					m_Chunks[index] = new Chunk(
 						m_Noise,
-						glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
+						glm::ivec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
 						          -d + m_LastChunkPosition.z),
 						new VertexArray(vao_array[index]));
 					index++;
 
 					m_Chunks[index] = new Chunk(
 						m_Noise,
-						glm::vec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
+						glm::ivec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
 						          d + m_LastChunkPosition.z),
 						new VertexArray(vao_array[index]));
 					index++;
@@ -115,7 +115,7 @@ void ChunkManager::Draw()
 			m_Renderer->GetFrustum().CheckRect(chunk->GetPositionWorldSpace(), CHUNK_SIZE, chunk->GetHeight()))
 		{
 			renderedCount++;
-			auto model = translate(glm::mat4(1.0), chunk->GetPositionWorldSpace());
+			auto model = translate(glm::mat4(1.0), static_cast<glm::vec3>(chunk->GetPositionWorldSpace()));
 			auto mvp = m_Renderer->m_ViewProjection * model;
 			blockShader->SetUniformMatrix4fv("MVP", 1, GL_FALSE, &mvp[0][0]);
 			blockShader->SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
@@ -129,7 +129,7 @@ void ChunkManager::Update()
 {
 }
 
-void ChunkManager::SetCurrenChunk(glm::vec3 currentChunk)
+void ChunkManager::SetCurrenChunk(glm::ivec3 currentChunk)
 {
 	if (currentChunk != m_CurrentChunk)
 	{
@@ -154,7 +154,7 @@ void ChunkManager::RunChunkLoader()
 	while (m_Running)
 	{
 		//aquire the lock, check if we should update chunks, and if not, wait untill we do.
-		glm::vec3 currentChunk;
+		glm::ivec3 currentChunk;
 		{
 			std::unique_lock<std::mutex> lk(m_ChunksLock);
 			if (!m_ShouldUpdateChunks)
