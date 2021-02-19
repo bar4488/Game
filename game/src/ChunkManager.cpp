@@ -3,6 +3,8 @@
 #include "ChunkManager.h"
 #include <glm/ext/matrix_transform.hpp>
 
+#include "utils/timer.h"
+
 ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm::vec3 currentChunk):
 	m_Renderer(renderer),
 	m_GameConfiguration(gameConf),
@@ -41,6 +43,7 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 	int radius = m_GameConfiguration->chunkRenderDistance;
 	int height = m_GameConfiguration->chunkRenderHeight;
 	auto index = 0;
+	unsigned int h = timer::start();
 	for (auto d = 0; d <= radius; d++)
 	{
 		// faces from top to bottom - y
@@ -80,7 +83,9 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 			}
 		}
 	}
-	std::cout << "finished loading " << m_ChunkCount << " chunks!";
+	auto t = timer::total(h);
+	std::cout << "finished loading " << m_ChunkCount << " chunks!\n";
+	std::cout << "avg. for chunk: " << t.count() / (1000000.0 * m_ChunkCount) << "ms" <<  std::endl;
 }
 
 ChunkManager::~ChunkManager()
@@ -107,7 +112,7 @@ void ChunkManager::Draw()
 		auto* chunk = m_Chunks[i];
 		if (chunk != nullptr &&
 			chunk->GetVisibleFacesCount() != 0 &&
-			m_Renderer->GetFrustum().CheckRect(chunk->GetCenterWorldSpace(), CHUNK_SIZE, CHUNK_HEIGHT))
+			m_Renderer->GetFrustum().CheckRect(chunk->GetPositionWorldSpace(), CHUNK_SIZE, chunk->GetHeight()))
 		{
 			renderedCount++;
 			auto model = translate(glm::mat4(1.0), chunk->GetPositionWorldSpace());

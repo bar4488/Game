@@ -18,14 +18,20 @@
 Chunk::Chunk(siv::PerlinNoise noise, glm::vec3 position, VertexArray *vao):
 	m_VertexArray(*vao),
 	m_TextureBuffer(GL_R8UI),
-	m_Noise(noise)
+	m_Noise(noise),
+	m_Dirty(false),
+	m_Loaded(false),
+	m_Meshed(false)
 {
 	LoadPosition(position);
 }
 Chunk::Chunk(siv::PerlinNoise noise, glm::vec3 position):
 	m_VertexArray(),
 	m_TextureBuffer(GL_R8UI),
-	m_Noise(noise)
+	m_Noise(noise),
+	m_Dirty(false),
+	m_Loaded(false),
+	m_Meshed(false)
 {
 	LoadPosition(position);
 }
@@ -48,10 +54,12 @@ void Chunk::LoadPosition(glm::vec3 position)
 
 void Chunk::CalculateMesh()
 {
-	for (unsigned char x = 0; x < CHUNK_SIZE; x++) {
-		for (unsigned char y = 0; y < CHUNK_HEIGHT; y++) {
-			for (unsigned char z = 0; z < CHUNK_SIZE; z++) {
+	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
+			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
 				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
+				if(y > m_HeighestBlock)
+					m_HeighestBlock = y;
 				if (x == 0 || m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add left side.
 					m_VisibleFaces.push_back({
@@ -68,7 +76,7 @@ void Chunk::CalculateMesh()
 						1u
 						});
 				}
-				if (y == 0 || m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+				if (y != 0 && m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add down side.
 					m_VisibleFaces.push_back({
 						glm::tvec3<unsigned char>(x,y,z),
@@ -120,6 +128,11 @@ glm::vec3 Chunk::GetCenterWorldSpace() {
 unsigned Chunk::GetVisibleFacesCount()
 {
 	return m_VisibleFaces.size();
+}
+
+unsigned char Chunk::GetHeight()
+{
+	return m_HeighestBlock;
 }
 
 glm::vec3 Chunk::GetPositionWorldSpace()

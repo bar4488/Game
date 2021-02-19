@@ -77,8 +77,9 @@ bool Frustum::CheckPoint(glm::vec3 position)
     return true;
 }
 
-bool Frustum::CheckRect(glm::vec3 center, float width, float height)
+bool Frustum::CheckRect(glm::vec3 bottomPoint, float width, float height)
 {
+	glm::vec3 center = bottomPoint + glm::vec3(width / 2.0, height / 2.0, width / 2.0);
 	// TODO: CAN BE OPTIMIZED!
 	// Check if any one point of the cube is in the view frustum.
 	for (char i = 0; i < 6; i++)

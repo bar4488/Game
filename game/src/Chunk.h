@@ -16,7 +16,7 @@
 #include "utils/noise/PerlinNoise.h"
 
 static const unsigned int CHUNK_SIZE = 16;
-static const unsigned int CHUNK_HEIGHT = 64;
+static const unsigned int CHUNK_HEIGHT = 256;
 
 enum face_dir : unsigned char
 {
@@ -44,6 +44,8 @@ public:
     glm::vec3 GetPositionWorldSpace();
     glm::vec3 GetCenterWorldSpace();
     unsigned int GetVisibleFacesCount();
+    // basically returns the highest block
+    unsigned char GetHeight();
     void Bind();
     void Unbind();
     ~Chunk();
@@ -57,6 +59,7 @@ private:
     void Draw(Renderer* renderer);
 private:
     siv::PerlinNoise m_Noise;
+    unsigned char m_HeighestBlock;
     glm::vec3 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
     std::vector<block_face> m_VisibleFaces;
