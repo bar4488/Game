@@ -66,7 +66,7 @@ void Game::Run() {
 			timer::reset(fps_handle);
 			seconds_lag = 0ns;
 		}
-		if (lag >= timestamp) {
+		while (lag >= timestamp) {
 			ProcessEvents();
 			if (m_KeyboardMgr.IsPressStarted(GLFW_KEY_F)) {
 				if (m_Fullscreen) {
@@ -96,7 +96,7 @@ void Game::Run() {
 				}
 			}
 			world->Update();
-			lag = std::chrono::nanoseconds(0ns);
+			lag -= timestamp;
 		}
 		glViewport(0, 0, m_Width * viewport_ratio, m_Height * viewport_ratio);
 		world->Draw();

@@ -34,13 +34,21 @@ struct block_face
     unsigned char texture; // byte
 }; // 5 bytes
 
+enum chunk_state
+{
+	dirty,
+	meshed,
+	loaded
+};
+
 class Chunk {
 public:
-    explicit Chunk(siv::PerlinNoise noise, glm::ivec3 position);
-    explicit Chunk(siv::PerlinNoise noise, glm::ivec3 position, VertexArray *vao);
-    void LoadPosition(glm::ivec3 position);
-    void CalculateMesh();
-    glm::ivec3 GetPositionChunkSpace();
+    explicit Chunk(siv::PerlinNoise noise, glm::ivec2 position);
+    explicit Chunk(siv::PerlinNoise noise, glm::ivec2 position, VertexArray *vao);
+    void SetPosition(glm::ivec2 position);
+    void LoadMesh();
+    void LoadData();
+    glm::ivec2 GetPositionChunkSpace();
     glm::ivec3 GetPositionWorldSpace();
     glm::ivec3 GetCenterWorldSpace();
     unsigned int GetVisibleFacesCount();
@@ -50,9 +58,7 @@ public:
     void Unbind();
     ~Chunk();
 public:
-    bool m_Dirty;
-    bool m_Meshed;
-    bool m_Loaded;
+    chunk_state m_CurrentState;
     std::mutex m_Lock;
 private:
     void InitializeChunk();
@@ -60,11 +66,11 @@ private:
 private:
     siv::PerlinNoise m_Noise;
     unsigned char m_HeighestBlock;
-    glm::ivec3 m_Position;
+    glm::ivec2 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
     std::vector<block_face> m_VisibleFaces;
     VertexArray m_VertexArray;
-    TextureBuffer m_TextureBuffer;
+    TextureBuffer m_TextureBuffer{GL_R8UI};
     friend class ChunkManager;
 };
 

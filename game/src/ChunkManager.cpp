@@ -5,84 +5,36 @@
 
 #include "utils/timer.h"
 
-ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm::ivec3 currentChunk):
+ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm::ivec2 currentChunk):
 	m_Renderer(renderer),
 	m_GameConfiguration(gameConf),
 	m_ChunkCount(CalculateChunkCount()),
 	m_Chunks(new Chunk*[m_ChunkCount]{nullptr}),
-	//m_ChunkThread(&ChunkManager::RunChunkLoader, this),
+	m_BackBufferChunks(new Chunk*[m_ChunkCount]{nullptr}),
 	m_ShouldUpdateChunks(false),
 	m_Running(true),
 	m_LastChunkPosition(currentChunk),
 	m_CurrentChunk(currentChunk),
-	m_Noise(5),
+	m_Noise(7),
 	m_ChunkCV()
 {
-	const auto starting_chunk = m_LastChunkPosition - glm::ivec3(m_GameConfiguration->chunkRenderDistance,
-	                                                            m_GameConfiguration->chunkRenderHeight,
-	                                                            m_GameConfiguration->chunkRenderDistance);
-	const auto chunk_height = 1 + 2 * m_GameConfiguration->chunkRenderHeight;
-	// first setup of chunks, initialize m_LastChunkPosition
-	// we want to create chunks from the closest to the player and away.
-	const auto
-		chunk_width = 1 + 2 * m_GameConfiguration->chunkRenderDistance;
 	auto* const vao_array = new GLuint[m_ChunkCount];
 	auto* const vb_array = new GLuint[m_ChunkCount];
 	auto* const ib_array = new GLuint[m_ChunkCount];
 	glGenBuffers(m_ChunkCount, vb_array);
 	glGenBuffers(m_ChunkCount, ib_array);
 	glGenVertexArrays(m_ChunkCount, vao_array);
-	// we should create the chunks from the closest to the player to the furthest.
-	// we can do a for loop and iterate over all the distances from 0 to min(chunkRenderHeight, chunkRenderDistance)
-	// then, in iteration i, create all the chunks that are in the i^3 cube but not in the (i-1)^3 cube.
-	// we can do it by iterating over the top to bottom face, if we are in the first or last faces, draw all the inside.
-	// else, iterate over the whole lines, if we are in the first or last lines, create all, else,
-	// create the first and last chunks in the line.
-	// afterwards, we should iterate over the reminding faces (depends on what was min(chunkRenderHeight, chunkRenderDistanec)
-	// and fill them in the array from clothest to furthest.
-	int radius = m_GameConfiguration->chunkRenderDistance;
-	int height = m_GameConfiguration->chunkRenderHeight;
-	auto index = 0;
 	unsigned int h = timer::start();
-	for (auto d = 0; d <= radius; d++)
+	for(int i = 0; i < (int)m_ChunkCount; i++)
 	{
-		// faces from top to bottom - y
-		for (int y = -height; y <= height; y++)
-		{
-			// lines from left to right - x
-			for (auto x = -d; x <= d; x++)
-			{
-				if (glm::abs(x) == d)
-				{
-					for (auto z = -d; z <= d; z++)
-					{
-						m_Chunks[index] = new Chunk(
-							m_Noise,
-							glm::ivec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
-							          z + m_LastChunkPosition.z),
-							new VertexArray(vao_array[index]));
-						index++;
-					}
-				}
-				else
-				{
-					m_Chunks[index] = new Chunk(
-						m_Noise,
-						glm::ivec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
-						          -d + m_LastChunkPosition.z),
-						new VertexArray(vao_array[index]));
-					index++;
-
-					m_Chunks[index] = new Chunk(
-						m_Noise,
-						glm::ivec3(x + m_LastChunkPosition.x, y + m_LastChunkPosition.y,
-						          d + m_LastChunkPosition.z),
-						new VertexArray(vao_array[index]));
-					index++;
-				}
-			}
-		}
+		auto chunkPos = CalculateChunkPositionByIndex(i, m_CurrentChunk);
+		m_Chunks[i] = new Chunk(
+			m_Noise,
+			chunkPos,
+			new VertexArray(vao_array[i]));
 	}
+	m_Chunks[0]->LoadMesh();
+	m_ChunkThread = std::thread(&ChunkManager::RunChunkLoader, this);
 	auto t = timer::total(h);
 	std::cout << "finished loading " << m_ChunkCount << " chunks!\n";
 	std::cout << "avg. for chunk: " << t.count() / (1000000.0 * m_ChunkCount) << "ms" <<  std::endl;
@@ -107,19 +59,35 @@ void ChunkManager::Draw()
 	blockShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
 	blockShader->SetUniform1i("faces", 2);
 	unsigned int renderedCount = 0;
-	for (size_t i = 0; i < m_ChunkCount; i++)
 	{
-		auto* chunk = m_Chunks[i];
-		if (chunk != nullptr &&
-			chunk->GetVisibleFacesCount() != 0 &&
-			m_Renderer->GetFrustum().CheckRect(chunk->GetPositionWorldSpace(), CHUNK_SIZE, chunk->GetHeight()))
+		std::unique_lock<std::mutex> lk(m_BackBufferLock);
+		int chunksLoaded = 0;
+		for (size_t i = 0; i < m_ChunkCount; i++)
 		{
-			renderedCount++;
-			auto model = translate(glm::mat4(1.0), static_cast<glm::vec3>(chunk->GetPositionWorldSpace()));
-			auto mvp = m_Renderer->m_ViewProjection * model;
-			blockShader->SetUniformMatrix4fv("MVP", 1, GL_FALSE, &mvp[0][0]);
-			blockShader->SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
-			chunk->Draw(m_Renderer);
+			auto* chunk = m_Chunks[i];
+			if(chunk == nullptr)
+			{
+				std::cout << "ERROR: Chunk is null!" << std::endl;
+			}
+			if (chunk != nullptr && 
+				chunk->m_CurrentState != dirty)
+			{
+				if(chunk->m_CurrentState == meshed)
+				{
+					if (chunksLoaded > 5) continue;
+					chunk->LoadData();
+				}
+				if(chunk->GetVisibleFacesCount() != 0 &&
+					m_Renderer->GetFrustum().CheckRect(chunk->GetPositionWorldSpace(), CHUNK_SIZE, chunk->GetHeight() + 1))
+				{
+					renderedCount++;
+					auto model = translate(glm::mat4(1.0), static_cast<glm::vec3>(chunk->GetPositionWorldSpace()));
+					auto mvp = m_Renderer->m_ViewProjection * model;
+					blockShader->SetUniformMatrix4fv("MVP", 1, GL_FALSE, &mvp[0][0]);
+					blockShader->SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
+					chunk->Draw(m_Renderer);
+				}
+			}
 		}
 	}
 	m_RenderedChunksCount = renderedCount;
@@ -129,7 +97,7 @@ void ChunkManager::Update()
 {
 }
 
-void ChunkManager::SetCurrenChunk(glm::ivec3 currentChunk)
+void ChunkManager::SetCurrenChunk(glm::ivec2 currentChunk)
 {
 	if (currentChunk != m_CurrentChunk)
 	{
@@ -137,9 +105,13 @@ void ChunkManager::SetCurrenChunk(glm::ivec3 currentChunk)
 		m_CurrentChunk = currentChunk;
 		m_ShouldUpdateChunks = true;
 		m_ChunkCV.notify_all();
-		std::cout << "Player has moved chunk! x:" << currentChunk.x << " y:" << currentChunk.y << " z:" << currentChunk.
-			z << "\n";
+		std::cout << "Player has moved chunk! x:" << currentChunk.x << " z:" << currentChunk.y << "\n";
 	}
+}
+
+Chunk* ChunkManager::GetChunkByPosition(glm::ivec2 position)
+{
+	return m_Chunks[CalculateChunkIndex(position, m_CurrentChunk)];
 }
 
 uint32_t ChunkManager::CalculateChunkCount()
@@ -151,10 +123,14 @@ uint32_t ChunkManager::CalculateChunkCount()
 
 void ChunkManager::RunChunkLoader()
 {
+	for(int i = 0; i < (int)m_ChunkCount; i++)
+	{
+		m_Chunks[i]->LoadMesh();
+	}
 	while (m_Running)
 	{
-		//aquire the lock, check if we should update chunks, and if not, wait untill we do.
-		glm::ivec3 currentChunk;
+		//aquire the lock, check if we should update chunks, and if not, wait until we do.
+		glm::ivec2 currentChunk;
 		{
 			std::unique_lock<std::mutex> lk(m_ChunksLock);
 			if (!m_ShouldUpdateChunks)
@@ -170,23 +146,104 @@ void ChunkManager::RunChunkLoader()
 		{
 			auto* const chunk = m_Chunks[i];
 			auto chunk_pos = chunk->GetPositionChunkSpace();
-			if (chunk_pos.x < currentChunk.x - chunk_dist ||
-				chunk_pos.x > currentChunk.x + chunk_dist ||
-				chunk_pos.z < currentChunk.z - chunk_dist ||
-				chunk_pos.z > currentChunk.z + chunk_dist ||
-				chunk_pos.y < currentChunk.y - chunk_height ||
-				chunk_pos.y > currentChunk.y + chunk_height)
+			int index = CalculateChunkIndex(chunk_pos, currentChunk);
+			if (index >= (int)m_ChunkCount)
 			{
 				// chunk is out side of render area.
 				// if the chunk at position 'p' relativly to the player last position is now out of render area,
 				// the chunk at position '-p' relativly to the player current  position must be in the render area.
-				auto reversed = currentChunk - (chunk_pos - m_LastChunkPosition);
-				chunk->LoadPosition(reversed);
+				glm::ivec2 reversed = currentChunk - (chunk_pos - m_LastChunkPosition);
+				chunk->SetPosition(reversed);
+				index = CalculateChunkIndex(reversed, currentChunk);
+				if (index >= m_ChunkCount) std::cout << "ERROR: ChunkManager calculating chunk reversed!" << std::endl;
+			}
+
+			m_BackBufferChunks[index] = chunk;
+		}
+		{
+			std::unique_lock<std::mutex> lk(m_BackBufferLock);
+			auto* chunks = m_Chunks;
+			m_Chunks = m_BackBufferChunks;
+			m_BackBufferChunks = chunks;
+			m_LastChunkPosition = currentChunk;
+		}
+		for (size_t i = 0; i < m_ChunkCount; i++)
+		{
+			auto* const chunk = m_Chunks[i];
+			if (chunk->m_CurrentState == dirty)
+			{
+				chunk->LoadMesh();
 			}
 		}
-		m_LastChunkPosition = currentChunk;
 		std::cout << "finished chunk calculation!\n";
 		// finished recalculating chunks!
 	}
 	// save and close
 }
+
+int ChunkManager::CalculateChunkIndex(glm::ivec2 chunkPosition, glm::ivec2 centerPosition)
+{
+	/*
+	 *  we are calculating the index of the chunk with position 'chunkPosition'
+	 *  in an array where the center is 'centerPosition'
+	 *
+	 *  the array is sorted like so:
+	 *  | 12-11-10-9  24
+	 *  | 13 2--1  8  23
+	 *  | 14 3  0  7  22
+	 *  | 15 4--5--6  21
+	 *  | 16-17-18-19-20
+	 *
+	 *  and we would like to find the index of a specific chunk.
+	 */
+	
+	const int rx = chunkPosition.x - centerPosition.x;
+	const int ry = chunkPosition.y - centerPosition.y;
+	const int dx = abs(rx);
+	const int dy = abs(ry);
+	const int distance = dx > dy ? dx : dy; // max(dx, dy);
+	int index;
+	if(rx == -distance || (rx < distance && ry == distance)) {
+		const int startingDistIndex = (2 * distance - 1) * (2 * distance - 1);
+		const int sx = distance - 1 - rx;
+		const int sy = distance - ry;
+		index = startingDistIndex + sx + sy;
+	}
+	else
+	{
+		const int startingDistIndex = 4 * distance * distance; // basically (2*distance)^2
+		index = startingDistIndex + (distance + ry) + (distance + rx);
+	}
+	return index;
+}
+
+
+glm::ivec2 ChunkManager::CalculateChunkPositionByIndex(int index, glm::ivec2 centerPosition)
+{
+	// does the opposite of CalculateChunkIndex
+	const int sq = static_cast<int>(glm::sqrt(index));
+	int distance;
+	if (sq % 2 == 1) distance = (sq + 1) / 2;
+	else distance = sq / 2;
+
+	const int starting_index = sq * sq;
+	glm::ivec2 pos;
+	if(sq % 2 == 1)
+	{
+		const glm::ivec2 starting_pos = glm::ivec2(distance - 1, distance);
+		const int remaining = index - starting_index;
+		const int dx = remaining >= 2 * distance ? 2 * distance - 1 : remaining;
+		const int dy = remaining - (2*distance - 1);
+		pos = glm::ivec2(starting_pos.x - dx, starting_pos.y - (dy > 0 ? dy : 0));
+	}
+	else
+	{
+		const glm::ivec2 starting_pos = glm::ivec2(-distance, -distance);
+		const int remaining = index - starting_index;
+		const int dx = remaining > 2 * distance ? 2 * distance : remaining;
+		const int dy = remaining - 2*distance;
+		pos = glm::ivec2(starting_pos.x + dx, starting_pos.y + (dy > 0 ? dy : 0));
+	}
+	return centerPosition + pos;
+}
+

@@ -84,42 +84,42 @@ bool Frustum::CheckRect(glm::vec3 bottomPoint, float width, float height)
 	// Check if any one point of the cube is in the view frustum.
 	for (char i = 0; i < 6; i++)
 	{
-		if (glm::dot(m_Planes[i], glm::vec4((center.x - width / 2), (center.y - height / 2), (center.z - width / 2), 1.0f)) >= 0.0f)
+		if (glm::dot(m_Planes[i], glm::vec4((center.x - width / 2.0), (center.y - height / 2.0), (center.z - width / 2.0), 1.0f)) >= 0.0f)
 		{
 			continue;
 		}
 
-		if (glm::dot(m_Planes[i], glm::vec4((center.x + width / 2), (center.y - height / 2), (center.z - width / 2), 1.0f)) >= 0.0f)
+		if (glm::dot(m_Planes[i], glm::vec4((center.x + width / 2.0), (center.y - height / 2.0), (center.z - width / 2.0), 1.0f)) >= 0.0f)
 		{
 			continue;
 		}
 
-		if (glm::dot(m_Planes[i], glm::vec4((center.x - width / 2), (center.y + height / 2), (center.z - width / 2), 1.0f)) >= 0.0f)
+		if (glm::dot(m_Planes[i], glm::vec4((center.x - width / 2.0), (center.y + height / 2.0), (center.z - width / 2.0), 1.0f)) >= 0.0f)
 		{
 			continue;
 		}
 
-		if (glm::dot(m_Planes[i], glm::vec4((center.x + width / 2), (center.y + height / 2), (center.z - width / 2), 1.0f)) >= 0.0f)
+		if (glm::dot(m_Planes[i], glm::vec4((center.x + width / 2.0), (center.y + height / 2.0), (center.z - width / 2.0), 1.0f)) >= 0.0f)
 		{
 			continue;
 		}
 
-		if (glm::dot(m_Planes[i], glm::vec4((center.x - width / 2), (center.y - height / 2), (center.z + width / 2), 1.0f)) >= 0.0f)
+		if (glm::dot(m_Planes[i], glm::vec4((center.x - width / 2.0), (center.y - height / 2.0), (center.z + width / 2.0), 1.0f)) >= 0.0f)
 		{
 			continue;
 		}
 
-		if (glm::dot(m_Planes[i], glm::vec4((center.x + width / 2), (center.y - height / 2), (center.z + width / 2), 1.0f)) >= 0.0f)
+		if (glm::dot(m_Planes[i], glm::vec4((center.x + width / 2.0), (center.y - height / 2.0), (center.z + width / 2.0), 1.0f)) >= 0.0f)
 		{
 			continue;
 		}
 
-		if (glm::dot(m_Planes[i], glm::vec4((center.x - width / 2), (center.y + height / 2), (center.z + width / 2), 1.0f)) >= 0.0f)
+		if (glm::dot(m_Planes[i], glm::vec4((center.x - width / 2.0), (center.y + height / 2.0), (center.z + width / 2.0), 1.0f)) >= 0.0f)
 		{
 			continue;
 		}
 
-		if (glm::dot(m_Planes[i], glm::vec4((center.x + width / 2), (center.y + height / 2), (center.z + width / 2), 1.0f)) >= 0.0f)
+		if (glm::dot(m_Planes[i], glm::vec4((center.x + width / 2.0), (center.y + height / 2.0), (center.z + width / 2.0), 1.0f)) >= 0.0f)
 		{
 			continue;
 		}

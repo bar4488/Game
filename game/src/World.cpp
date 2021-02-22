@@ -9,6 +9,8 @@ World::World(Renderer* renderer, GameConfiguration* gameConf) :
 	m_Skybox(renderer),
 	m_Crosshair(renderer)
 {
+	auto pos = m_ChunkMgr.GetChunkByPosition(m_Player.GetCurrentChunkPosition());
+	m_Player.m_Position.y = pos->GetHeight() + 3;
 	m_Renderer->LoadTexture("dirt", "res/textures/dirt.png");
 	m_Renderer->LoadProgram("block", "res/shaders/block_vertex.shader", "res/shaders/block_fragment.shader");
 }
@@ -17,7 +19,7 @@ void World::Update()
 {
 	// update the player
 	m_Player.Update(m_GameConfiguration->window, m_GameConfiguration->width, m_GameConfiguration->height);
-	glm::vec3 pc = m_Player.GetCurrentChunkPosition();
+	glm::ivec2 pc = m_Player.GetCurrentChunkPosition();
 	m_ChunkMgr.SetCurrenChunk(pc);
 }
 
