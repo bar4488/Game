@@ -15,7 +15,7 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 	m_Running(true),
 	m_LastChunkPosition(currentChunk),
 	m_CurrentChunk(currentChunk),
-	m_Noise(7),
+	m_Noise(FastNoise::NewFromEncodedNodeTree( "DQAFAAAAAAAAQAgAAAAAAD8AAAAAAA==")),
 	m_ChunkCV()
 {
 	auto* const vao_array = new GLuint[m_ChunkCount];
@@ -25,15 +25,19 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 	glGenBuffers(m_ChunkCount, ib_array);
 	glGenVertexArrays(m_ChunkCount, vao_array);
 	unsigned int h = timer::start();
+	unsigned handle = timer::start();
 	for(int i = 0; i < (int)m_ChunkCount; i++)
 	{
 		auto chunkPos = CalculateChunkPositionByIndex(i, m_CurrentChunk);
 		m_Chunks[i] = new Chunk(
+			this,
 			m_Noise,
 			chunkPos,
 			new VertexArray(vao_array[i]));
 	}
-	m_Chunks[0]->LoadMesh();
+	auto l = timer::total(handle);
+	std::cout << "time to create chunks: " << l.count() / 1000000 << std::endl;
+	m_Chunks[0]->CalculateMesh();
 	m_ChunkThread = std::thread(&ChunkManager::RunChunkLoader, this);
 	auto t = timer::total(h);
 	std::cout << "finished loading " << m_ChunkCount << " chunks!\n";
@@ -70,12 +74,12 @@ void ChunkManager::Draw()
 				std::cout << "ERROR: Chunk is null!" << std::endl;
 			}
 			if (chunk != nullptr && 
-				chunk->m_CurrentState != dirty)
+				chunk->m_CurrentState != unloaded && chunk->m_CurrentState != loaded)
 			{
-				if(chunk->m_CurrentState == meshed)
+				if(chunk->m_CurrentState == meshed || chunk->m_CurrentState == dirty_meshed)
 				{
-					if (chunksLoaded > 5) continue;
-					chunk->LoadData();
+					if (chunksLoaded > 20) continue;
+					chunk->LoadMesh();
 				}
 				if(chunk->GetVisibleFacesCount() != 0 &&
 					m_Renderer->GetFrustum().CheckRect(chunk->GetPositionWorldSpace(), CHUNK_SIZE, chunk->GetHeight() + 1))
@@ -105,13 +109,14 @@ void ChunkManager::SetCurrenChunk(glm::ivec2 currentChunk)
 		m_CurrentChunk = currentChunk;
 		m_ShouldUpdateChunks = true;
 		m_ChunkCV.notify_all();
-		std::cout << "Player has moved chunk! x:" << currentChunk.x << " z:" << currentChunk.y << "\n";
+		//std::cout << "Player has moved chunk! x:" << currentChunk.x << " z:" << currentChunk.y << "\n";
 	}
 }
 
 Chunk* ChunkManager::GetChunkByPosition(glm::ivec2 position)
 {
-	return m_Chunks[CalculateChunkIndex(position, m_CurrentChunk)];
+	auto index = CalculateChunkIndex(position, m_Chunks[0]->m_Position);
+	return index < m_ChunkCount ? m_Chunks[index] : nullptr;
 }
 
 uint32_t ChunkManager::CalculateChunkCount()
@@ -123,9 +128,32 @@ uint32_t ChunkManager::CalculateChunkCount()
 
 void ChunkManager::RunChunkLoader()
 {
+	// (2(n+1)+1)^2 - (2n+1)^2 = (2n+3)^2 - (2n+1)^2 = 12n - 5n +9 - 1 = 7n+8
+	unsigned handle = timer::start();
+	int distance = 1;
+	int a0 = 0;
+	int a1 = 1;
+	int a2 = 9;
 	for(int i = 0; i < (int)m_ChunkCount; i++)
 	{
-		m_Chunks[i]->LoadMesh();
+		m_Chunks[i]->LoadData();
+		if(i == a2)
+		{
+			for (int j = a0; j < a1; j++)
+			{
+				m_Chunks[j]->CalculateMesh();
+			}
+			distance++;
+			a0 = a1;
+			a1 = a2;
+			a2 += 7 * distance + 8;
+		}
+	}
+	auto t = timer::total(handle);
+	std::cout << "time to load and calculate initial chunks: " << t.count() / 1000000 << std::endl;
+	for(int i = a0; i < a1; i++)
+	{
+		m_Chunks[i]->CalculateMesh();
 	}
 	while (m_Running)
 	{
@@ -140,6 +168,8 @@ void ChunkManager::RunChunkLoader()
 			currentChunk = m_CurrentChunk;
 			m_ShouldUpdateChunks = false;
 		}
+		std::cout << "starting chunks recalculation! " << std::endl;
+		unsigned handle = timer::start();
 		const auto chunk_dist = m_GameConfiguration->chunkRenderDistance,
 		           chunk_height = m_GameConfiguration->chunkRenderHeight;
 		for (size_t i = 0; i < m_ChunkCount; i++)
@@ -157,9 +187,22 @@ void ChunkManager::RunChunkLoader()
 				index = CalculateChunkIndex(reversed, currentChunk);
 				if (index >= m_ChunkCount) std::cout << "ERROR: ChunkManager calculating chunk reversed!" << std::endl;
 			}
+			else 
+			{
+				// if was in the edge
+				auto r_pos = chunk_pos - m_LastChunkPosition;
+				auto new_r_pos = chunk_pos - currentChunk;
+				if((abs(r_pos.x) == (int)chunk_dist  && new_r_pos.x != r_pos.x) || 
+					(abs(r_pos.y) == (int)chunk_dist) && new_r_pos.y != r_pos.y)
+				{
+					chunk->m_CurrentState = dirty;
+				}
+			}
 
 			m_BackBufferChunks[index] = chunk;
 		}
+		auto t = timer::lap(handle);
+		std::cout << "time to setting position: " << t.count() / 1000000 << std::endl;
 		{
 			std::unique_lock<std::mutex> lk(m_BackBufferLock);
 			auto* chunks = m_Chunks;
@@ -167,15 +210,30 @@ void ChunkManager::RunChunkLoader()
 			m_BackBufferChunks = chunks;
 			m_LastChunkPosition = currentChunk;
 		}
+		t = timer::lap(handle);
+		std::cout << "time to setting position: " << t.count() / 1000000 << std::endl;
 		for (size_t i = 0; i < m_ChunkCount; i++)
 		{
 			auto* const chunk = m_Chunks[i];
-			if (chunk->m_CurrentState == dirty)
+			if (chunk->m_CurrentState == unloaded)
 			{
-				chunk->LoadMesh();
+				chunk->LoadData();
 			}
 		}
-		std::cout << "finished chunk calculation!\n";
+		t = timer::lap(handle);
+		std::cout << "time to setting position: " << t.count() / 1000000 << std::endl;
+		for (size_t i = 0; i < m_ChunkCount; i++)
+		{
+			auto* const chunk = m_Chunks[i];
+			if (chunk->m_CurrentState == loaded || chunk->m_CurrentState == dirty)
+			{
+				chunk->CalculateMesh();
+			}
+		}
+		t = timer::lap(handle);
+		std::cout << "time to calculating meshes: " << t.count() / 1000000 << std::endl;
+		t = timer::total(handle);
+		std::cout << "finished chunk calculation in: " << t.count() / 1000000 << std::endl;
 		// finished recalculating chunks!
 	}
 	// save and close

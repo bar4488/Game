@@ -8,6 +8,7 @@
 #include <chrono>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 
 #ifdef _WIN32
@@ -32,7 +33,7 @@ Game::Game(int width, int height) :
 	t_pressed(false),
 	full_ratio(true),
 	viewport_ratio(1.0f),
-	m_Configuration{10u, 0u, width, height, m_Window}
+	m_Configuration{8u, 0u, width, height, m_Window}
 {
 }
 
@@ -44,7 +45,6 @@ void Game::Run() {
 	const auto handle = timer::start();
 	m_Renderer.LoadFont("arial", "res/fonts/arial.ttf", 48);
 	world = new World(&m_Renderer, &m_Configuration);
-	std::cout << "milliseconds: " << timer::lap(handle).count() / 1000000 << std::endl;
 
 	// Game Loop //
 	using ns = std::chrono::nanoseconds;
@@ -60,8 +60,6 @@ void Game::Run() {
 
 		if(seconds_lag.count() > 1000000000)
 		{
-			//std::cout << "current fps: " << 1000000000 / timer::average(fps_handle).count() << std::endl;
-			std::cout << "current mpf: " << timer::average(fps_handle).count() / 1000000 << std::endl;
 			current_fps = 1000000000 / timer::average(fps_handle).count();
 			timer::reset(fps_handle);
 			seconds_lag = 0ns;
@@ -107,11 +105,15 @@ void Game::Run() {
 			m_Renderer.DrawText("arial", "Ms. per frame: " + std::to_string(1000 / current_fps), 1.0f, glm::vec2(m_Width * viewport_ratio, 60), glm::vec3(1.0f,1.0f,1.0f));
 			m_Renderer.DrawText("arial", "L. Chunks: " + std::to_string(world->m_ChunkMgr.GetChunkCount()), 1.0f, glm::vec2(m_Width * viewport_ratio, 110), glm::vec3(1.0f,1.0f,1.0f));
 			m_Renderer.DrawText("arial", "R. Chunks: " + std::to_string(world->m_ChunkMgr.GetRenderedChunksCount()), 1.0f, glm::vec2(m_Width * viewport_ratio, 160), glm::vec3(1.0f,1.0f,1.0f));
+			std::stringstream ss;
+			ss << "X: " << std::fixed << std::setprecision(1) << world->m_Player.m_Position.x;
+			ss << " Y: " << std::fixed << std::setprecision(1) << world->m_Player.m_Position.y;
+			ss << " Z: " << std::fixed << std::setprecision(1) << world->m_Player.m_Position.z;
+			m_Renderer.DrawText("arial", ss.str(), 0.6f, glm::vec2(m_Width * viewport_ratio, 210), glm::vec3(1.0f,1.0f,1.0f));
 		}
 		glfwSwapBuffers(m_Window);
 	}
 	glfwTerminate();
-	std::cout << "done!" << std::endl;
 }
 
 

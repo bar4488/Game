@@ -5,7 +5,7 @@
 #include <thread>
 #include "graphics/Renderer.h"
 #include "Configuration.h"
-#include "utils/noise/PerlinNoise.h"
+#include "FastNoise/FastNoise.h"
 
 class ChunkManager
 {
@@ -32,8 +32,9 @@ private:
     // the other thread will modify this array, and when ready we will switch between them
 	Chunk** m_BackBufferChunks;
     bool m_ShouldUpdateChunks;
+    bool debugStopUpdateChunks;
     bool m_Running;
-    siv::PerlinNoise m_Noise;
+    FastNoise::SmartNode<> m_Noise;
     glm::ivec2 m_LastChunkPosition;
     glm::ivec2 m_CurrentChunk;
     std::mutex m_ChunksLock; // lock for when we try to change shouldUpdateChunks

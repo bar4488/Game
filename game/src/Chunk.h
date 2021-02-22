@@ -9,11 +9,12 @@
 #include <mutex>
 #include <glm/glm.hpp>
 #include "graphics/VertexArray.h"
-#include "graphics/VertexBuffer.h"
 #include "graphics/IndexBuffer.h"
 #include "graphics/Renderer.h"
 #include "graphics/TextureBuffer.h"
-#include "utils/noise/PerlinNoise.h"
+#include "FastNoise/FastNoise.h"
+
+class ChunkManager;
 
 static const unsigned int CHUNK_SIZE = 16;
 static const unsigned int CHUNK_HEIGHT = 256;
@@ -36,18 +37,22 @@ struct block_face
 
 enum chunk_state
 {
-	dirty,
-	meshed,
-	loaded
+    unloaded, // chunk was just initialized
+	loaded, // m_ChunkData is initialized
+	meshed, // m_VisibleFaces is ready but not on gpu
+	dirty, // the chunk was changed and should be remeshed, we can still draw it
+	dirty_meshed, // the chunk was changed and should be sent to gpu, we can still draw it
+    active // the chunk is active and no more work is needed
 };
 
 class Chunk {
 public:
-    explicit Chunk(siv::PerlinNoise noise, glm::ivec2 position);
-    explicit Chunk(siv::PerlinNoise noise, glm::ivec2 position, VertexArray *vao);
+    explicit Chunk(ChunkManager* mgr, FastNoise::SmartNode<> noise, glm::ivec2 position);
+    explicit Chunk(ChunkManager* mgr, FastNoise::SmartNode<> noise, glm::ivec2 position, VertexArray *vao);
     void SetPosition(glm::ivec2 position);
-    void LoadMesh();
     void LoadData();
+    void CalculateMesh();
+    void LoadMesh();
     glm::ivec2 GetPositionChunkSpace();
     glm::ivec3 GetPositionWorldSpace();
     glm::ivec3 GetCenterWorldSpace();
@@ -64,7 +69,8 @@ private:
     void InitializeChunk();
     void Draw(Renderer* renderer);
 private:
-    siv::PerlinNoise m_Noise;
+    ChunkManager* m_Manager;
+    FastNoise::SmartNode<> m_Noise;
     unsigned char m_HeighestBlock;
     glm::ivec2 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
