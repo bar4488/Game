@@ -10,6 +10,8 @@
 #include "GLFW/glfw3.h"
 #include <glm/gtc/matrix_transform.hpp>
 
+#define GRAVITY 0.1f
+
 class Player {
 public:
     Player(glm::vec3 initialPosition, glm::vec3 initialDirection);
@@ -19,6 +21,8 @@ public:
     glm::vec3 GetViewDirection() const;
     glm::vec3 m_Position;
     glm::vec2 m_Direction;
+    glm::vec3 m_Speed;
+    glm::vec3 m_Acceleration;
 private:
     glm::mat4 m_ViewProjection;
 };

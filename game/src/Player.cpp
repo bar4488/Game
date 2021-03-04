@@ -5,6 +5,14 @@
 #include "Player.h"
 #include "Chunk.h"
 
+Player::Player(glm::vec3 initialPosition, glm::vec3 initialDirection):
+	m_Position(initialPosition),
+	m_Direction(initialDirection),
+	m_Speed(0),
+	m_Acceleration(0)
+{
+}
+
 void Player::Update(GLFWwindow* window, int width, int height) {
     glm::vec3 direction = glm::vec3(
             cos(m_Direction.y) * sin(m_Direction.x),
@@ -58,11 +66,6 @@ void Player::Update(GLFWwindow* window, int width, int height) {
     m_Direction.x += mouseSpeed * float( (float)width/2 - xpos );
 
     glfwSetCursorPos(window, (double)width / 2, (double)height / 2);
-}
-
-Player::Player(glm::vec3 initialPosition, glm::vec3 initialDirection)
-: m_Position(initialPosition), m_Direction(initialDirection){
-
 }
 
 glm::mat4 Player::GetViewProjection() const {

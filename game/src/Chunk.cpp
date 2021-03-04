@@ -21,40 +21,43 @@ Chunk::Chunk(ChunkManager* mgr, FastNoise::SmartNode<> noise, glm::ivec2 positio
 	m_Manager(mgr),
 	m_Noise(noise),
 	m_VertexArray(*vao),
-	m_CurrentState(dirty)
+	m_CurrentState(unloaded),
+	m_HeighestBlock(0)
 {
 	SetPosition(position);
 }
 Chunk::Chunk(ChunkManager* mgr, FastNoise::SmartNode<> noise, glm::ivec2 position):
 	m_Manager(mgr),
-	m_CurrentState(dirty),
-	m_Noise(noise)
+	m_CurrentState(unloaded),
+	m_Noise(noise),
+	m_HeighestBlock(0)
 {
 	SetPosition(position);
 }
 
 void Chunk::SetPosition(glm::ivec2 position)
 {
-	m_Position = position;
 	m_CurrentState = unloaded;
+	m_Position = position;
 }
 
 void Chunk::LoadData()
 {
-		// Create an array of floats to store the noise output in
-	std::vector<float> noiseOutput(CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT);
 
 	// Generate a 16 x 16 x 16 area of noise
-	m_Noise->GenUniformGrid3D(noiseOutput.data(), 0, m_Position.y * CHUNK_SIZE, m_Position.x * CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE, CHUNK_SIZE, 0.001f, 1337);
+	m_Noise->GenUniformGrid3D(m_NoiseOutput, m_Position.x * CHUNK_SIZE, 0, m_Position.y * CHUNK_SIZE, CHUNK_SIZE, CHUNK_HEIGHT, CHUNK_SIZE, 0.002f, 1237);
 	int index = 0;
 
-	for (int x = 0; x < CHUNK_SIZE; x++)
+	for (int z = 0; z < CHUNK_SIZE; z++)
 	{
-		for (int z = 0; z < CHUNK_SIZE; z++)
+		for (int y = 0; y < CHUNK_HEIGHT; y++)
 		{
-			for (int y = 0; y < CHUNK_HEIGHT; y++)
+			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
-				m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = noiseOutput[index++] + (CHUNK_HEIGHT - 2.0*y) / CHUNK_HEIGHT > 0.0 ? 1 : 0;
+				int blockType = m_NoiseOutput[index++] + (CHUNK_HEIGHT - 2.0f*y) / CHUNK_HEIGHT > 0.0f ? 1 : 0;
+				m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = blockType;
+				if(blockType != 0 && y > m_HeighestBlock)
+					m_HeighestBlock = y;
 			}			
 		}
 	}
@@ -73,11 +76,9 @@ void Chunk::CalculateMesh()
 	auto* backward_c = m_Manager->GetChunkByPosition(m_Position + glm::ivec2(0,-1));
 	backward_c = backward_c != nullptr && backward_c->m_CurrentState != unloaded ? backward_c : nullptr;
 	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
-		for (unsigned int y = 0; y < CHUNK_HEIGHT; y++) {
+		for (unsigned int y = 0; y < m_HeighestBlock + 1; y++) {
 			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
 				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
-				if(y > m_HeighestBlock)
-					m_HeighestBlock = y;
 				if ((x!=0 && m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) ||
 					(x == 0 && left_c != nullptr && left_c->m_ChunkData[CHUNK_SIZE - 1 + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0)) 
 				{
@@ -137,8 +138,9 @@ void Chunk::CalculateMesh()
 			}
 		}
 	}
+	m_FacesCount = m_VisibleFaces.size();
 
-	m_CurrentState = m_VisibleFaces.empty() ? active : m_CurrentState == dirty ? dirty_meshed : meshed;
+	m_CurrentState = m_VisibleFaces.empty() ? active : (m_CurrentState == dirty ? dirty_meshed : meshed);
 }
 
 void Chunk::LoadMesh()
@@ -166,7 +168,7 @@ glm::ivec3 Chunk::GetCenterWorldSpace() {
 
 unsigned Chunk::GetVisibleFacesCount()
 {
-	return m_VisibleFaces.size();
+	return m_FacesCount;
 }
 
 unsigned char Chunk::GetHeight()
@@ -199,7 +201,7 @@ void Chunk::Draw(Renderer* renderer)
 {
 	m_TextureBuffer.Bind(2);
 	m_VertexArray.Bind();
-	glDrawArrays(GL_TRIANGLES, 0, m_VisibleFaces.size() * 6);
+	glDrawArrays(GL_TRIANGLES, 0, m_FacesCount * 6);
 }
 ;
 

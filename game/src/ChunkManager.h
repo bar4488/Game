@@ -28,6 +28,7 @@ private:
     GameConfiguration *m_GameConfiguration;
     uint32_t m_ChunkCount;
     uint32_t m_RenderedChunksCount;
+    uint32_t m_MeshedChunksCount;
 	Chunk** m_Chunks;
     // the other thread will modify this array, and when ready we will switch between them
 	Chunk** m_BackBufferChunks;

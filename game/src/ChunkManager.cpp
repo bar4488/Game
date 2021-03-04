@@ -15,7 +15,7 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 	m_Running(true),
 	m_LastChunkPosition(currentChunk),
 	m_CurrentChunk(currentChunk),
-	m_Noise(FastNoise::NewFromEncodedNodeTree( "DQAFAAAAAAAAQAgAAAAAAD8AAAAAAA==")),
+	m_Noise(FastNoise::NewFromEncodedNodeTree( "DQADAAAAAAAAQAkAAAAAAD8AAAAAAA==")),
 	m_ChunkCV()
 {
 	auto* const vao_array = new GLuint[m_ChunkCount];
@@ -37,7 +37,7 @@ ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm:
 	}
 	auto l = timer::total(handle);
 	std::cout << "time to create chunks: " << l.count() / 1000000 << std::endl;
-	m_Chunks[0]->CalculateMesh();
+	m_Chunks[0]->LoadData();
 	m_ChunkThread = std::thread(&ChunkManager::RunChunkLoader, this);
 	auto t = timer::total(h);
 	std::cout << "finished loading " << m_ChunkCount << " chunks!\n";
@@ -63,9 +63,9 @@ void ChunkManager::Draw()
 	blockShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
 	blockShader->SetUniform1i("faces", 2);
 	unsigned int renderedCount = 0;
+	int chunksLoaded = 0;
 	{
 		std::unique_lock<std::mutex> lk(m_BackBufferLock);
-		int chunksLoaded = 0;
 		for (size_t i = 0; i < m_ChunkCount; i++)
 		{
 			auto* chunk = m_Chunks[i];
@@ -73,13 +73,17 @@ void ChunkManager::Draw()
 			{
 				std::cout << "ERROR: Chunk is null!" << std::endl;
 			}
-			if (chunk != nullptr && 
-				chunk->m_CurrentState != unloaded && chunk->m_CurrentState != loaded)
+			else if (chunk->m_CurrentState != unloaded && chunk->m_CurrentState != loaded)
 			{
-				if(chunk->m_CurrentState == meshed || chunk->m_CurrentState == dirty_meshed)
+				if(chunk->m_CurrentState == meshed)
 				{
 					if (chunksLoaded > 20) continue;
 					chunk->LoadMesh();
+				}
+				if(chunk->m_CurrentState == dirty_meshed)
+				{
+					if (chunksLoaded < 20)
+						chunk->LoadMesh();
 				}
 				if(chunk->GetVisibleFacesCount() != 0 &&
 					m_Renderer->GetFrustum().CheckRect(chunk->GetPositionWorldSpace(), CHUNK_SIZE, chunk->GetHeight() + 1))
@@ -95,6 +99,7 @@ void ChunkManager::Draw()
 		}
 	}
 	m_RenderedChunksCount = renderedCount;
+	m_MeshedChunksCount = chunksLoaded;
 }
 
 void ChunkManager::Update()
@@ -187,7 +192,7 @@ void ChunkManager::RunChunkLoader()
 				index = CalculateChunkIndex(reversed, currentChunk);
 				if (index >= m_ChunkCount) std::cout << "ERROR: ChunkManager calculating chunk reversed!" << std::endl;
 			}
-			else 
+			else if(chunk->m_CurrentState == active)
 			{
 				// if was in the edge
 				auto r_pos = chunk_pos - m_LastChunkPosition;
@@ -211,17 +216,19 @@ void ChunkManager::RunChunkLoader()
 			m_LastChunkPosition = currentChunk;
 		}
 		t = timer::lap(handle);
-		std::cout << "time to setting position: " << t.count() / 1000000 << std::endl;
+		std::cout << "time to lock position: " << t.count() / 1000000 << std::endl;
+		int loadedChunks = 0;
 		for (size_t i = 0; i < m_ChunkCount; i++)
 		{
 			auto* const chunk = m_Chunks[i];
 			if (chunk->m_CurrentState == unloaded)
 			{
+				loadedChunks++;
 				chunk->LoadData();
 			}
 		}
 		t = timer::lap(handle);
-		std::cout << "time to setting position: " << t.count() / 1000000 << std::endl;
+		std::cout << "time to loading " << loadedChunks << " data position: " << t.count() / 1000000 << std::endl;
 		for (size_t i = 0; i < m_ChunkCount; i++)
 		{
 			auto* const chunk = m_Chunks[i];
