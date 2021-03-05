@@ -59,6 +59,12 @@ public:
         m_Stride += count * glutls::GetSizeOfType(GL_BYTE);
     }
 
+    template<>
+    void Push<int>(unsigned int count, unsigned int location) {
+        m_Elements.push_back({GL_INT, count, location, false});
+        m_Stride += count * glutls::GetSizeOfType(GL_INT);
+    }
+
     inline std::vector<VertexBufferElement> GetElement() const { return m_Elements; }
     inline unsigned int GetStride() const { return m_Stride; }
 };

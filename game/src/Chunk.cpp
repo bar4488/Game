@@ -49,7 +49,8 @@ void Chunk::LoadData()
 	const int height = top - bottom;
 
 	// Generate a 16 x 16 x 16 area of noise
-	m_Noise->GenUniformGrid3D(m_NoiseOutput, m_Position.x * CHUNK_SIZE, 0, m_Position.y * CHUNK_SIZE, CHUNK_SIZE, height, CHUNK_SIZE, 0.005f, 1237);
+	float noiseOutput[height * CHUNK_SIZE * CHUNK_SIZE];
+	m_Noise->GenUniformGrid3D(noiseOutput, m_Position.x * CHUNK_SIZE, 0, m_Position.y * CHUNK_SIZE, CHUNK_SIZE, height, CHUNK_SIZE, 0.005f, 1237);
 	int index = 0;
 	m_HeighestBlock = bottom;
 
@@ -65,7 +66,7 @@ void Chunk::LoadData()
 				}
 				else
 				{
-					int blockType = m_NoiseOutput[index++] + (height - 2.0f*(y - bottom)) / height > 0.0f ? 1 : 0;
+					int blockType = noiseOutput[index++] + (height - 2.0f*(y - bottom)) / height > 0.0f ? 1 : 0;
 					m_ChunkData[x + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] = blockType;
 					if(blockType != 0 && y > m_HeighestBlock)
 						m_HeighestBlock = y;

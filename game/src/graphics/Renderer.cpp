@@ -14,17 +14,17 @@
 using namespace std;
 
 Renderer::Renderer(int width, int height) :
-	m_Textures(),
-	m_SkyboxVAO(),
-	m_SkyboxVB(),
-	m_SkyboxIB(),
-	m_CrosshairVAO(),
-	m_CrosshairVB(),
 	m_Width(width),
 	m_Height(height),
-	m_Frustum(),
 	m_FreeType(this)
 {
+	m_CubeVB.SetData(normal_cube_vertices, sizeof(normal_cube_vertices), GL_STATIC_DRAW);
+	m_CubeIB.SetData(skybox_indices, 24, GL_UNSIGNED_INT, GL_STATIC_DRAW);
+	VertexBufferLayout vl;
+	
+	vl.Push<int>(3, 0);
+	m_CubeVAO.AddBuffer(m_CubeVB, vl);
+	LoadProgram("cube", "cube_vertex.shader", "cube_fragment.shader");
 }
 
 void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDir) {
@@ -34,6 +34,7 @@ void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDi
 	m_Projection = glm::perspective(glm::radians(45.0f),
 		(float)m_Width / (float)m_Height, 0.1f,
 		2000.0f);
+	m_InverseProjection = glm::inverse(m_Projection);
 	m_ViewProjection = m_Projection * m_View;
 	m_CameraPosition = cameraPos;
 	m_Frustum = Frustum(m_ViewProjection);
@@ -66,6 +67,18 @@ void Renderer::DrawLines(VertexArray& va, unsigned int first, unsigned int count
 	glLineWidth(width);
 	glDrawArrays(GL_LINES, first, count);
 	va.Unbind();
+}
+
+void Renderer::DrawCube(glm::vec3 position, glm::mat4 mvp, glm::vec3 color)
+{
+	m_CubeVAO.Bind();
+	m_CubeIB.Bind();
+	Program* program = GetProgramByName("cube");
+	program->Bind();
+	program->SetUniformVec3("u_color", color);
+	program->SetUniformMatrix4fv("MVP", 1, false, &mvp[0][0]);
+	glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, nullptr);
+	m_CubeVAO.Unbind();
 }
 
 void Renderer::EndDraw(glm::vec3 cameraDir) {

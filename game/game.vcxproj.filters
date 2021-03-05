@@ -1425,6 +1425,8 @@
     <None Include="res\shaders\block_fragment.shader" />
     <None Include="res\shaders\text_fragment.shader" />
     <None Include="res\shaders\text_vertex.shader" />
+    <None Include="res\shaders\cube_fragment.shader" />
+    <None Include="res\shaders\cube_vertex.shader" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\dirt.png">

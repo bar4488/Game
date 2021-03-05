@@ -8,13 +8,14 @@
 #include "ChunkManager.h"
 #include "decor/Skybox.h"
 #include "decor/Crosshair.h"
+#include "utils/keyboard/KeyboardMgr.h"
 
 class Game;
 
 class World
 {
 public: 
-    World(Renderer *renderer, GameConfiguration *gameConf);
+    World(Renderer *renderer, GameConfiguration *gameConf, KeyboardMgr* keyboard);
     void Update();
     void Draw();
     ~World();
@@ -25,10 +26,11 @@ private:
     GameConfiguration *m_GameConfiguration;
     WorldConficuration m_Configuration;
     Renderer *m_Renderer;
-    Player m_Player;
     ChunkManager m_ChunkMgr;
+    KeyboardMgr* m_KeyboardMgr;
     Skybox m_Skybox;
     Crosshair m_Crosshair;
+    Player m_Player;
 
     friend class Game;
 };

@@ -124,6 +124,33 @@ Chunk* ChunkManager::GetChunkByPosition(glm::ivec2 position)
 	return index < m_ChunkCount ? m_Chunks[index] : nullptr;
 }
 
+int ChunkManager::GetBlockId(glm::ivec3 position)
+{
+	glm::ivec2 chunkPos = glm::ivec2(floor(position.x / 16.0f), floor(position.z / 16.0f));
+	glm::ivec3 relativePosition = position - glm::ivec3(chunkPos.x, 0, chunkPos.y) * 16;
+	int index = relativePosition.x + relativePosition.y * CHUNK_SIZE + relativePosition.z * CHUNK_SIZE * CHUNK_HEIGHT;
+	if(index < CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT)
+	{
+		Chunk* chunk = GetChunkByPosition(chunkPos);
+		return chunk == nullptr ? 0 : chunk->m_ChunkData[index];
+	}
+	return 0;
+}
+
+void ChunkManager::SetBlockId(glm::ivec3 position, int blockId)
+{
+	glm::ivec2 chunkPos = glm::ivec2(floor(position.x / 16.0f), floor(position.z / 16.0f));
+	glm::ivec3 relativePosition = position - glm::ivec3(chunkPos.x, 0, chunkPos.y) * 16;
+	int index = relativePosition.x + relativePosition.y * CHUNK_SIZE + relativePosition.z * CHUNK_SIZE * CHUNK_HEIGHT;
+	if(index < CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT)
+	{
+		Chunk* chunk = GetChunkByPosition(chunkPos);
+		chunk->m_ChunkData[index] = blockId;
+		chunk->CalculateMesh();
+		chunk->LoadMesh();
+	}
+}
+
 uint32_t ChunkManager::CalculateChunkCount()
 {
 	const auto range = 1 + 2 * m_GameConfiguration->chunkRenderDistance;

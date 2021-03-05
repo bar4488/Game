@@ -16,6 +16,8 @@ public:
     void Update();
     void SetCurrenChunk(glm::ivec2 currentChunk);
     Chunk* GetChunkByPosition(glm::ivec2 position);
+    int GetBlockId(glm::ivec3 position);
+    void SetBlockId(glm::ivec3 position, int blockId);
     uint32_t GetChunkCount();
     uint32_t GetRenderedChunksCount();
 private:

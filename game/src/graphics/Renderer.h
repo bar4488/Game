@@ -25,6 +25,7 @@ public:
 	void DrawText(std::string font, std::string text, float scale, glm::vec2 position, glm::vec3 color);
 	void DrawText3D(std::string font, std::string text, float scale, glm::vec2 position, glm::vec3 color);
 	void DrawLines(VertexArray& va, unsigned int first, unsigned int count, float width);
+	void DrawCube(glm::vec3 position, glm::mat4 mvp, glm::vec3 color); // debug utility
 
 	void LoadProgram(std::string name, std::string vertexPath, std::string fragmentPath);
 	void LoadTexture(std::string name, std::string texturePath);
@@ -40,6 +41,7 @@ public:
 public:
 	glm::mat4 m_ViewProjection;
 	glm::mat4 m_Projection;
+	glm::mat4 m_InverseProjection;
 	glm::mat4 m_View;
 	glm::mat4 m_NTView;
 	glm::vec3 m_CameraPosition;
@@ -48,12 +50,9 @@ private:
 	std::unordered_map<std::string, Texture*> m_Textures;
 	std::unordered_map<std::string, Font*> m_Fonts;
 	int m_Width, m_Height;
-	VertexArray m_SkyboxVAO;
-	VertexBuffer m_SkyboxVB;
-	IndexBuffer m_SkyboxIB;
-	VertexArray m_CrosshairVAO;
-	VertexBuffer m_CrosshairVB;
-	IndexBuffer m_CrosshairIB;
+	VertexArray m_CubeVAO;
+	VertexBuffer m_CubeVB;
+	IndexBuffer m_CubeIB;
 	Frustum m_Frustum;
 	FreeType m_FreeType;
 };

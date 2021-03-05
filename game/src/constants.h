@@ -2,6 +2,45 @@
 #include "glm/vec3.hpp"
 #include "glm/vec2.hpp"
 
+constexpr GLbyte normal_cube_vertices[] = {
+	// Right face 0-4
+	1, 1, 1,
+	1, 0, 1,
+	1, 0, 0,
+	1, 1, 0,
+
+	// Up face 4-8
+	1, 1, 1,
+	1, 1, 0,
+	0, 1, 0,
+	0, 1, 1,
+
+	// Forward face 802
+	1, 1, 1,
+	0, 0, 1,
+	1, 0, 1,
+	0, 1, 1,
+
+	// Left face 1206
+	0, 0, 0,
+	0, 1, 1,
+	0, 1, 0,
+	0, 0, 1,
+
+	// Down face 16-20
+	0, 0, 0,
+	1, 0, 1,
+	1, 0, 0,
+	0, 0, 1,
+
+
+	// Backward 20-24
+	0, 0, 0,
+	1, 1, 0,
+	1, 0, 0,
+	0, 1, 0,
+};
+
 constexpr GLbyte skybox_vertices[] = {
 	// Right face 0-4
 	1, 1, 1, 1, 0, 0,

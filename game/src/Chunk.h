@@ -16,7 +16,7 @@
 
 class ChunkManager;
 
-static const unsigned int CHUNK_SIZE = 32;
+static const unsigned int CHUNK_SIZE = 16;
 static const unsigned int CHUNK_HEIGHT = 256;
 
 enum face_dir : unsigned char
@@ -74,7 +74,6 @@ private:
     unsigned char m_HeighestBlock;
     glm::ivec2 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
-	float m_NoiseOutput[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
     std::vector<block_face> m_VisibleFaces;
     int m_FacesCount = 0;
     VertexArray m_VertexArray;

@@ -6,6 +6,8 @@ unsigned int glutls::GetSizeOfType(unsigned int type) {
 			return sizeof(float);
 		case GL_UNSIGNED_INT:
 			return sizeof(unsigned int);
+		case GL_INT:
+			return sizeof(int);
 		case GL_UNSIGNED_BYTE:
 			return sizeof(unsigned char);
 		case GL_BYTE:
