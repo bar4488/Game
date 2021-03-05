@@ -19,12 +19,12 @@ Renderer::Renderer(int width, int height) :
 	m_FreeType(this)
 {
 	m_CubeVB.SetData(normal_cube_vertices, sizeof(normal_cube_vertices), GL_STATIC_DRAW);
-	m_CubeIB.SetData(skybox_indices, 24, GL_UNSIGNED_INT, GL_STATIC_DRAW);
+	m_CubeIB.SetData(skybox_indices, 36, GL_UNSIGNED_BYTE, GL_STATIC_DRAW);
 	VertexBufferLayout vl;
 	
-	vl.Push<int>(3, 0);
+	vl.Push<char>(3, 0);
 	m_CubeVAO.AddBuffer(m_CubeVB, vl);
-	LoadProgram("cube", "cube_vertex.shader", "cube_fragment.shader");
+	LoadProgram("cube", "res/shaders/cube_vertex.shader", "res/shaders/cube_fragment.shader");
 }
 
 void Renderer::BeginDraw(glm::mat4 View, glm::vec3 cameraPos, glm::vec3 cameraDir) {
@@ -69,15 +69,18 @@ void Renderer::DrawLines(VertexArray& va, unsigned int first, unsigned int count
 	va.Unbind();
 }
 
-void Renderer::DrawCube(glm::vec3 position, glm::mat4 mvp, glm::vec3 color)
+void Renderer::DrawCube(glm::vec3 position, glm::mat4 vp, glm::vec3 color)
 {
+	glm::mat4 mvp = vp * glm::translate(glm::identity<glm::mat4>(), position);
 	m_CubeVAO.Bind();
 	m_CubeIB.Bind();
 	Program* program = GetProgramByName("cube");
 	program->Bind();
 	program->SetUniformVec3("u_color", color);
 	program->SetUniformMatrix4fv("MVP", 1, false, &mvp[0][0]);
-	glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, nullptr);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, nullptr);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	m_CubeVAO.Unbind();
 }
 

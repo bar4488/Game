@@ -24,7 +24,9 @@ public:
     glm::mat4 GetInverseViewMatrix();
     glm::vec3 m_Position;
     glm::ivec3 m_PointedBlock;
+    glm::ivec3 m_PointedBlockTop;
     bool m_IsPointing;
+    bool m_IsPointingTop;
     glm::vec2 m_Direction;
     glm::vec3 m_Speed;
     glm::vec3 m_Acceleration;

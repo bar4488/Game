@@ -111,7 +111,7 @@ void Player::CalculateTerrainMouseIntersection()
     else 
 		maxY = slope.y == 0 ? INFINITY : -(startPosition.y - floor(startPosition.y)) / slope.y;
     if (slope.z >= 0)
-		maxZ = slope.z == 0 ? INFINITY : (startPosition.z - floor(startPosition.z)) / slope.z;
+		maxZ = slope.z == 0 ? INFINITY : (floor(startPosition.z) + 1 - startPosition.z) / slope.z;
     else 
 		maxZ = slope.z == 0 ? INFINITY : -(startPosition.z - floor(startPosition.z)) / slope.z;
 
@@ -120,16 +120,26 @@ void Player::CalculateTerrainMouseIntersection()
 	deltaY = slope.y == 0 ? INFINITY : 1 / slope.y * stepY;
 	deltaZ = slope.z == 0 ? INFINITY : 1 / slope.z * stepZ;
 
+    glm::ivec3 lastOutput;
 	glm::ivec3 output = block;
+    bool isFirst = true;
 
+    m_IsPointing = false;
+    m_IsPointingTop = false;
 	while(glm::distance(glm::vec3(output), startPosition) <= 10)
 	{
         if(m_ChunkManager->GetBlockId(output) != 0)
         {
             m_PointedBlock = output;
             m_IsPointing = true;
+            if(!isFirst)
+            {
+                m_IsPointingTop = true;
+                m_PointedBlockTop = lastOutput;
+            }
             return;
         }
+        lastOutput = output;
 		if(maxX < maxY)
 		{
 			if(maxX < maxZ)
@@ -156,6 +166,6 @@ void Player::CalculateTerrainMouseIntersection()
 				maxZ += deltaZ;
 			}
 		}
+        isFirst = false;
 	}
-    m_IsPointing = false;
 }

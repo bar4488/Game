@@ -103,6 +103,13 @@ void World::Update()
 			m_ChunkMgr.SetBlockId(m_Player.m_PointedBlock, 0);
 		}
 	}
+	if(m_Player.m_IsPointingTop)
+	{
+		if(m_KeyboardMgr->IsPressStarted(GLFW_KEY_E))
+		{
+			m_ChunkMgr.SetBlockId(m_Player.m_PointedBlockTop, 1);
+		}
+	}
 }
 
 void World::Draw()
