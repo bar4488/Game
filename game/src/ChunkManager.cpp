@@ -146,6 +146,10 @@ void ChunkManager::SetBlockId(glm::ivec3 position, int blockId)
 	{
 		Chunk* chunk = GetChunkByPosition(chunkPos);
 		chunk->m_ChunkData[index] = blockId;
+		if(chunk->m_HeighestBlock < position.y)
+		{
+			chunk->m_HeighestBlock = position.y;
+		}
 		chunk->CalculateMesh();
 		chunk->LoadMesh();
 	}
