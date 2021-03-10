@@ -33,7 +33,7 @@ private:
     World *world{};
     Renderer m_Renderer;
     KeyboardMgr m_KeyboardMgr;
-    GameConfiguration m_Configuration;
+    Context m_Configuration;
 private:
     void ProcessEvents();
     GLFWwindow* SetupGraphics();

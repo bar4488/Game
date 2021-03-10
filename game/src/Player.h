@@ -14,17 +14,20 @@
 
 #define GRAVITY 0.1f
 
+class World;
+
 class Player {
 public:
-    Player(glm::vec3 initialPosition, glm::vec3 initialDirection, ChunkManager* manager);
+    Player(glm::vec3 initialPosition, glm::vec3 initialDirection, World* world);
     void Update(GLFWwindow *window, int width, int height);
     glm::mat4 GetViewProjection() const;
     glm::ivec2 GetCurrentChunkPosition() const;
     glm::vec3 GetViewDirection() const;
-    glm::mat4 GetInverseViewMatrix();
+    glm::vec3 CalculateMovement();
     glm::vec3 m_Position;
     glm::ivec3 m_PointedBlock;
     glm::ivec3 m_PointedBlockTop;
+    bool m_Flying = false;
     bool m_IsPointing;
     bool m_IsPointingTop;
     glm::vec2 m_Direction;
@@ -34,7 +37,7 @@ private:
     void CalculateTerrainMouseIntersection();
     glm::mat4 m_ViewProjection;
 
-    ChunkManager* m_ChunkManager;
+    World* m_World;
 };
 
 

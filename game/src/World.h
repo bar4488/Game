@@ -15,19 +15,20 @@ class Game;
 class World
 {
 public: 
-    World(Renderer *renderer, GameConfiguration *gameConf, KeyboardMgr* keyboard);
+    World(Renderer *renderer, Context *gameConf, KeyboardMgr* keyboard);
     void Update();
     void Draw();
     ~World();
 public:
     void DrawSkybox();
     void DrawCrosshair();
-private:
-    GameConfiguration *m_GameConfiguration;
-    WorldConficuration m_Configuration;
-    Renderer *m_Renderer;
+
     ChunkManager m_ChunkMgr;
     KeyboardMgr* m_KeyboardMgr;
+private:
+    Context *m_GameConfiguration;
+    WorldConficuration m_Configuration;
+    Renderer *m_Renderer;
     Skybox m_Skybox;
     Crosshair m_Crosshair;
     Player m_Player;

@@ -10,7 +10,7 @@
 class ChunkManager
 {
 public:
-    ChunkManager(Renderer *renderer, GameConfiguration *gameConf, glm::ivec2 currentChunk);
+    ChunkManager(Renderer *renderer, Context *gameConf, glm::ivec2 currentChunk);
     ~ChunkManager();
     void Draw();
     void Update();
@@ -27,7 +27,7 @@ private:
     uint32_t CalculateChunkCount();
 private:
     Renderer *m_Renderer;
-    GameConfiguration *m_GameConfiguration;
+    Context *m_GameConfiguration;
     uint32_t m_ChunkCount;
     uint32_t m_RenderedChunksCount;
     uint32_t m_MeshedChunksCount;

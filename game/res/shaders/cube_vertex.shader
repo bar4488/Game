@@ -7,5 +7,5 @@ uniform vec3 u_color;
 
 void main(){
   vec4 p = MVP * vec4(position, 1.0);
-  gl_Position = vec4(p.x, p.y, 0, p.w);
+  gl_Position = vec4(p.x, p.y, p.z, p.w);
 }

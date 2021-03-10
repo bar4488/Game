@@ -1,7 +1,7 @@
 #include "World.h"
 
-World::World(Renderer* renderer, GameConfiguration* gameConf, KeyboardMgr* keyboard) :
-	m_Player(glm::vec3(-4, 0, 0), glm::vec3(1, 0, 0), &m_ChunkMgr),
+World::World(Renderer* renderer, Context* gameConf, KeyboardMgr* keyboard) :
+	m_Player(glm::vec3(-4, 0, 0), glm::vec3(1, 0, 0), this),
 	m_GameConfiguration(gameConf),
 	m_Configuration(),
 	m_KeyboardMgr(keyboard),
@@ -11,7 +11,7 @@ World::World(Renderer* renderer, GameConfiguration* gameConf, KeyboardMgr* keybo
 	m_Crosshair(renderer)
 {
 	auto pos = m_ChunkMgr.GetChunkByPosition(m_Player.GetCurrentChunkPosition());
-	m_Player.m_Position.y = pos->GetHeight() + 3;
+	m_Player.m_Position.y = pos->GetHeight() + 10;
 	m_Renderer->LoadTexture("dirt", "res/textures/dirt.png");
 	m_Renderer->LoadProgram("block", "res/shaders/block_vertex.shader", "res/shaders/block_fragment.shader");
 }

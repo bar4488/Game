@@ -33,7 +33,7 @@ Game::Game(int width, int height) :
 	t_pressed(false),
 	full_ratio(true),
 	viewport_ratio(1.0f),
-	m_Configuration{32u, 0u, width, height, m_Window}
+	m_Configuration{8u, 0u, width, height, &m_KeyboardMgr, m_Window}
 {
 }
 

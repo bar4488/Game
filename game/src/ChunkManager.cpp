@@ -5,7 +5,7 @@
 
 #include "utils/timer.h"
 
-ChunkManager::ChunkManager(Renderer* renderer, GameConfiguration* gameConf, glm::ivec2 currentChunk):
+ChunkManager::ChunkManager(Renderer* renderer, Context* gameConf, glm::ivec2 currentChunk):
 	m_Renderer(renderer),
 	m_GameConfiguration(gameConf),
 	m_ChunkCount(CalculateChunkCount()),
@@ -152,6 +152,39 @@ void ChunkManager::SetBlockId(glm::ivec3 position, int blockId)
 		}
 		chunk->CalculateMesh();
 		chunk->LoadMesh();
+		if(relativePosition.x == 0)
+		{
+			Chunk* chunk = GetChunkByPosition(chunkPos + glm::ivec2(-1, 0));
+			if (chunk != nullptr) {
+				chunk->CalculateMesh();
+				chunk->LoadMesh();
+			}
+		}
+		if(relativePosition.z == 0)
+		{
+			Chunk* chunk = GetChunkByPosition(chunkPos + glm::ivec2(0, -1));
+			if (chunk != nullptr) {
+				chunk->CalculateMesh();
+				chunk->LoadMesh();
+			}
+		}
+		if(relativePosition.x == CHUNK_SIZE - 1)
+		{
+			
+			Chunk* chunk = GetChunkByPosition(chunkPos + glm::ivec2(1, 0));
+			if (chunk != nullptr) {
+				chunk->CalculateMesh();
+				chunk->LoadMesh();
+			}
+		}
+		if(relativePosition.y == CHUNK_SIZE - 1)
+		{
+			Chunk* chunk = GetChunkByPosition(chunkPos + glm::ivec2(0, 1));
+			if (chunk != nullptr) {
+				chunk->CalculateMesh();
+				chunk->LoadMesh();
+			}
+		}
 	}
 }
 

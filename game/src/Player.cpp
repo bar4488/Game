@@ -4,13 +4,14 @@
 
 #include "Player.h"
 #include "Chunk.h"
+#include "World.h"
 
-Player::Player(glm::vec3 initialPosition, glm::vec3 initialDirection, ChunkManager* manager):
+Player::Player(glm::vec3 initialPosition, glm::vec3 initialDirection, World* world):
 	m_Position(initialPosition),
 	m_Direction(initialDirection),
 	m_Speed(0),
 	m_Acceleration(0),
-	m_ChunkManager(manager)
+    m_World(world)
 {
 }
 
@@ -31,43 +32,78 @@ void Player::Update(GLFWwindow* window, int width, int height) {
         glm::cross(right, direction));
 	m_ViewProjection = view;
     float speed = 0.1f;
-    int ctrl = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL);
-    if(ctrl == GLFW_PRESS) {
-        speed = 0.8;
+    KeyboardMgr* k_mgr = m_World->m_KeyboardMgr;
+    if(k_mgr->IsPressStarted(GLFW_KEY_H))
+    {
+        m_Flying = !m_Flying;
     }
-    int w = glfwGetKey(window, GLFW_KEY_W);
-    if(w == GLFW_PRESS) {
-        m_Position += direction * speed;
+    if(k_mgr->IsPressed(GLFW_KEY_LEFT_CONTROL))
+    {
+        speed = 0.2;
     }
-    int s = glfwGetKey(window, GLFW_KEY_S);
-    if(s == GLFW_PRESS) {
-        m_Position -= direction * speed;
+    glm::vec3 v_speed;
+    if(m_Flying)
+    {
+        v_speed = glm::vec3();
+		if(k_mgr->IsPressed(GLFW_KEY_W)) {
+			v_speed += direction * speed;
+		}
+		if(k_mgr->IsPressed(GLFW_KEY_S)) {
+			v_speed -= direction * speed;
+		}
+		if(k_mgr->IsPressed(GLFW_KEY_D)) {
+			v_speed += right * speed;
+		}
+		if(k_mgr->IsPressed(GLFW_KEY_A)) {
+			v_speed -= right * speed;
+		}
+        if (k_mgr->IsPressed(GLFW_KEY_SPACE))
+        {
+            v_speed.y += 0.2;
+        }
     }
-    int d = glfwGetKey(window, GLFW_KEY_D);
-    if(d == GLFW_PRESS) {
-        m_Position += right * speed;
+    else
+    {
+        v_speed = m_Speed;
+        glm::vec2 sp = glm::vec2();
+		if(k_mgr->IsPressed(GLFW_KEY_W)) {
+			sp.y += speed;
+		}
+		if(k_mgr->IsPressed(GLFW_KEY_S)) {
+			sp.y -= speed;
+		}
+		if(k_mgr->IsPressed(GLFW_KEY_D)) {
+			sp.x += speed;
+		}
+		if(k_mgr->IsPressed(GLFW_KEY_A)) {
+			sp.x -= speed;
+		}
+        if (k_mgr->IsPressStarted(GLFW_KEY_SPACE)) {
+            v_speed += glm::vec3(0, 0.3, 0);
+        }
+
+        glm::vec3 front;
+		front = glm::normalize(glm::vec3(direction.x, 0, direction.z));
+        v_speed = glm::vec3(0, v_speed.y, 0) + sp.x * right + sp.y * front;
+
+		// gravity
+		if(!m_Flying && v_speed.y > -0.5)
+		{
+			v_speed.y -= 0.01;
+		}
     }
-    int a = glfwGetKey(window, GLFW_KEY_A);
-    if(a == GLFW_PRESS) {
-        m_Position -= right * speed;
-    }
-    int space = glfwGetKey(window, GLFW_KEY_SPACE);
-    if(space == GLFW_PRESS) {
-        m_Position += glm::vec3(0,1,0) * speed;
-    }
-    int shift = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT);
-    if(shift == GLFW_PRESS) {
-        m_Position += glm::vec3(0,1,0) * -speed;
-    }
+    m_Speed = v_speed;
+    // calculate collisions
+    m_Position = CalculateMovement();
+
+    CalculateTerrainMouseIntersection();
+
     float mouseSpeed = 0.005;
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
     // Compute new orientation
     m_Direction.y = glm::clamp(m_Direction.y + mouseSpeed * float((float)height/2 - ypos), -3.14f/2, 3.14f/2);
     m_Direction.x += mouseSpeed * float( (float)width/2 - xpos );
-
-    CalculateTerrainMouseIntersection();
-
     glfwSetCursorPos(window, (double)width / 2, (double)height / 2);
 }
 
@@ -87,6 +123,56 @@ glm::vec3 Player::GetViewDirection() const
             sin(m_Direction.y),
             cos(m_Direction.y) * cos(m_Direction.x)
     );
+}
+
+glm::vec3 Player::CalculateMovement()
+{
+    glm::vec3 pos = m_Speed + m_Position;
+    glm::ivec3 lastBlockPos = glm::ivec3(floor(m_Position.x), floor(m_Position.y), floor(m_Position.z));
+    glm::ivec3 blockPos = glm::ivec3(floor(pos.x), floor(pos.y), floor(pos.z));
+
+    glm::vec3 newPos = m_Position;
+    ChunkManager* manager = &m_World->m_ChunkMgr;
+    if(manager->GetBlockId(lastBlockPos - glm::ivec3(0,1,0)) != 0 ||
+		(manager->GetBlockId(glm::ivec3(lastBlockPos.x, floor(pos.y + 0.4), lastBlockPos.z) - glm::ivec3(0,1,0)) == 0 && 
+		manager->GetBlockId(glm::ivec3(lastBlockPos.x, floor(pos.y - 0.4), lastBlockPos.z) - glm::ivec3(0,1,0)) == 0 && 
+		manager->GetBlockId(glm::ivec3(lastBlockPos.x, floor(pos.y + 0.2f), lastBlockPos.z)) == 0 && 
+		manager->GetBlockId(glm::ivec3(lastBlockPos.x, floor(pos.y - 0.2f), lastBlockPos.z)) == 0)
+        )
+    {
+        newPos.y += m_Speed.y;
+    }
+    else
+    {
+        m_Speed.y = 0;
+    }
+    if(manager->GetBlockId(lastBlockPos) != 0 ||
+		(manager->GetBlockId(glm::ivec3(floor(pos.x + 0.2f), lastBlockPos.y - 1, lastBlockPos.z)) == 0 &&
+		manager->GetBlockId(glm::ivec3(floor(pos.x - 0.2f), lastBlockPos.y - 1, lastBlockPos.z)) == 0 &&
+		manager->GetBlockId(glm::ivec3(floor(pos.x + 0.2f), lastBlockPos.y, lastBlockPos.z)) == 0 && 
+		manager->GetBlockId(glm::ivec3(floor(pos.x - 0.2f), lastBlockPos.y, lastBlockPos.z)) == 0))
+        
+    {
+        newPos.x += m_Speed.x;
+    }
+    else
+    {
+        m_Speed.x = 0;
+    }
+    if(manager->GetBlockId(lastBlockPos) != 0 ||
+		(manager->GetBlockId(glm::ivec3(lastBlockPos.x, lastBlockPos.y - 1, floor(pos.z + 0.2f))) == 0 && 
+		manager->GetBlockId(glm::ivec3(lastBlockPos.x, lastBlockPos.y - 1, floor(pos.z - 0.2f))) == 0 && 
+		manager->GetBlockId(glm::ivec3(lastBlockPos.x, lastBlockPos.y, floor(pos.z + 0.2f))) == 0 &&
+		manager->GetBlockId(glm::ivec3(lastBlockPos.x, lastBlockPos.y, floor(pos.z - 0.2f))) == 0)
+        )
+    {
+        newPos.z += m_Speed.z;
+    }
+    else
+    {
+        m_Speed.z = 0;
+    }
+    return newPos;
 }
 
 void Player::CalculateTerrainMouseIntersection()
@@ -128,7 +214,7 @@ void Player::CalculateTerrainMouseIntersection()
     m_IsPointingTop = false;
 	while(glm::distance(glm::vec3(output), startPosition) <= 10)
 	{
-        if(m_ChunkManager->GetBlockId(output) != 0)
+        if(m_World->m_ChunkMgr.GetBlockId(output) != 0)
         {
             m_PointedBlock = output;
             m_IsPointing = true;
