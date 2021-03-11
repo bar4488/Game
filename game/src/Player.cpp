@@ -61,6 +61,10 @@ void Player::Update(GLFWwindow* window, int width, int height) {
         {
             v_speed.y += 0.2;
         }
+        if (k_mgr->IsPressed(GLFW_KEY_LEFT_SHIFT))
+        {
+            v_speed.y -= 0.2;
+        }
     }
     else
     {

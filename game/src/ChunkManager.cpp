@@ -57,11 +57,11 @@ void ChunkManager::Draw()
 	// chunk manager specific:
 	blockShader->Bind();
 	m_Renderer->BindTexture("dirt", 0);
-	blockShader->SetUniform1i("tex", 0);
-	blockShader->SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
-	blockShader->SetUniformVec3("viewPos", m_Renderer->m_CameraPosition);
-	blockShader->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
-	blockShader->SetUniform1i("faces", 2);
+	blockShader->SetUniform<int>("tex", 0);
+	blockShader->SetUniform<glm::vec3>("lightDir", glm::vec3(0.2f, 1.0f, 0.7f));
+	blockShader->SetUniform<glm::vec3>("viewPos", m_Renderer->m_CameraPosition);
+	blockShader->SetUniform<glm::vec3>("lightColor", glm::vec3(0.8f, 0.8f, 0.0f));
+	blockShader->SetUniform<int>("faces", 2);
 	unsigned int renderedCount = 0;
 	int chunksLoaded = 0;
 	{
@@ -89,10 +89,12 @@ void ChunkManager::Draw()
 					m_Renderer->GetFrustum().CheckRect(chunk->GetPositionWorldSpace(), CHUNK_SIZE, chunk->GetHeight() + 1))
 				{
 					renderedCount++;
+
+					blockShader->SetUniform<unsigned>("lod", chunk->m_LevelOfDetails);
 					auto model = translate(glm::mat4(1.0), static_cast<glm::vec3>(chunk->GetPositionWorldSpace()));
 					auto mvp = m_Renderer->m_ViewProjection * model;
-					blockShader->SetUniformMatrix4fv("MVP", 1, GL_FALSE, &mvp[0][0]);
-					blockShader->SetUniformMatrix4fv("M", 1, GL_FALSE, &model[0][0]);
+					blockShader->SetUniform<glm::mat4>("MVP", mvp);
+					blockShader->SetUniform<glm::mat4>("M", model);
 					chunk->Draw(m_Renderer);
 				}
 			}
@@ -177,7 +179,7 @@ void ChunkManager::SetBlockId(glm::ivec3 position, int blockId)
 				chunk->LoadMesh();
 			}
 		}
-		if(relativePosition.y == CHUNK_SIZE - 1)
+		if(relativePosition.z == CHUNK_SIZE - 1)
 		{
 			Chunk* chunk = GetChunkByPosition(chunkPos + glm::ivec2(0, 1));
 			if (chunk != nullptr) {
@@ -205,6 +207,22 @@ void ChunkManager::RunChunkLoader()
 	int a2 = 9;
 	for(int i = 0; i < (int)m_ChunkCount; i++)
 	{
+		if(distance > 10)
+		{
+			m_Chunks[i]->SetLod(2);
+		}
+		if(distance > 20)
+		{
+			m_Chunks[i]->SetLod(3);
+		}
+		if(distance > 40)
+		{
+			m_Chunks[i]->SetLod(4);
+		}
+		if(distance > 80)
+		{
+			m_Chunks[i]->SetLod(5);
+		}
 		m_Chunks[i]->LoadData();
 		if(i == a2)
 		{

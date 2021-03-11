@@ -47,7 +47,6 @@ enum chunk_state
 
 class Chunk {
 public:
-    explicit Chunk(ChunkManager* mgr, FastNoise::SmartNode<> noise, glm::ivec2 position);
     explicit Chunk(ChunkManager* mgr, FastNoise::SmartNode<> noise, glm::ivec2 position, VertexArray *vao);
     void SetPosition(glm::ivec2 position);
     void LoadData();
@@ -57,6 +56,7 @@ public:
     glm::ivec3 GetPositionWorldSpace();
     glm::ivec3 GetCenterWorldSpace();
     unsigned int GetVisibleFacesCount();
+    void SetLod(unsigned char lod);
     // basically returns the highest block
     unsigned char GetHeight();
     void Bind();
@@ -71,13 +71,17 @@ private:
 private:
     ChunkManager* m_Manager;
     FastNoise::SmartNode<> m_Noise;
-    unsigned char m_HeighestBlock;
-    glm::ivec2 m_Position;
     unsigned int m_ChunkData[CHUNK_SIZE * CHUNK_HEIGHT * CHUNK_SIZE];
     std::vector<block_face> m_VisibleFaces;
+
+    glm::ivec2 m_Position;
+    unsigned char m_HeighestBlock;
+    unsigned char m_LevelOfDetails;
     int m_FacesCount = 0;
+
     VertexArray m_VertexArray;
     TextureBuffer m_TextureBuffer{GL_R8UI};
+
     friend class ChunkManager;
 };
 

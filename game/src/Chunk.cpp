@@ -22,15 +22,8 @@ Chunk::Chunk(ChunkManager* mgr, FastNoise::SmartNode<> noise, glm::ivec2 positio
 	m_Noise(noise),
 	m_VertexArray(*vao),
 	m_CurrentState(unloaded),
-	m_HeighestBlock(0)
-{
-	SetPosition(position);
-}
-Chunk::Chunk(ChunkManager* mgr, FastNoise::SmartNode<> noise, glm::ivec2 position):
-	m_Manager(mgr),
-	m_CurrentState(unloaded),
-	m_Noise(noise),
-	m_HeighestBlock(0)
+	m_HeighestBlock(0),
+	m_LevelOfDetails(1)
 {
 	SetPosition(position);
 }
@@ -41,9 +34,28 @@ void Chunk::SetPosition(glm::ivec2 position)
 	m_Position = position;
 }
 
+void Chunk::SetLod(unsigned char lod)
+{
+	if (m_LevelOfDetails != lod)
+	{
+		if(m_CurrentState == active || m_CurrentState == dirty || m_CurrentState == dirty_meshed)
+		{
+			m_CurrentState = dirty;
+		}
+		else
+		{
+			m_CurrentState = loaded;
+		}
+		m_LevelOfDetails = lod;
+	}
+	else
+	{
+		std::cout << "error set lod!\n";
+	}
+}
+
 void Chunk::LoadData()
 {
-
 	const int top = 128;
 	const int bottom = 60;
 	const int height = top - bottom;
@@ -54,11 +66,11 @@ void Chunk::LoadData()
 	int index = 0;
 	m_HeighestBlock = bottom;
 
-	for (int z = 0; z < CHUNK_SIZE; z++)
+	for (int z = 0; z < CHUNK_SIZE; z += 1)
 	{
-		for (int y = 0; y < top; y++)
+		for (int y = 0; y < top; y += 1)
 		{
-			for (int x = 0; x < CHUNK_SIZE; x++)
+			for (int x = 0; x < CHUNK_SIZE; x += 1)
 			{
 				if(y < bottom)
 				{
@@ -88,12 +100,14 @@ void Chunk::CalculateMesh()
 	forward_c = forward_c != nullptr && forward_c->m_CurrentState != unloaded ? forward_c : nullptr;
 	auto* backward_c = m_Manager->GetChunkByPosition(m_Position + glm::ivec2(0,-1));
 	backward_c = backward_c != nullptr && backward_c->m_CurrentState != unloaded ? backward_c : nullptr;
-	for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
-		for (unsigned int y = 0; y < m_HeighestBlock + 1; y++) {
-			for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+
+	int offset = pow(2, m_LevelOfDetails - 1);
+	for (unsigned int x = 0; x < CHUNK_SIZE; x += pow(2, m_LevelOfDetails - 1)) {
+		for (unsigned int y = 0; y < m_HeighestBlock + 1; y+= pow(2, m_LevelOfDetails - 1)) {
+			for (unsigned int z = 0; z < CHUNK_SIZE; z+=pow(2, m_LevelOfDetails - 1)) {
 				if (m_ChunkData[x + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) continue;
-				if ((x!=0 && m_ChunkData[x - 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) ||
-					(x == 0 && left_c != nullptr && left_c->m_ChunkData[CHUNK_SIZE - 1 + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0)) 
+				if ((x!=0 && m_ChunkData[x - offset + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) ||
+					(x == 0 && left_c != nullptr && left_c->m_ChunkData[CHUNK_SIZE - offset + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0)) 
 				{
 					// Add left side.
 					m_VisibleFaces.push_back({
@@ -102,8 +116,8 @@ void Chunk::CalculateMesh()
 						1u
 						});
 				}
-				if ((x != CHUNK_SIZE - 1 && m_ChunkData[x + 1 + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) ||
-					(x == CHUNK_SIZE - 1 && right_c != nullptr && right_c->m_ChunkData[y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0)) 
+				if ((x != CHUNK_SIZE - offset && m_ChunkData[x + offset + y * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) ||
+					(x == CHUNK_SIZE - offset && right_c != nullptr && right_c->m_ChunkData[0 + y*CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0)) 
 				{
 					// Add right side.
 					m_VisibleFaces.push_back({
@@ -112,7 +126,7 @@ void Chunk::CalculateMesh()
 						1u
 						});
 				}
-				if (y != 0 && m_ChunkData[x + (y - 1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+				if (y != 0 && m_ChunkData[x + (y - offset) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add down side.
 					m_VisibleFaces.push_back({
 						glm::tvec3<unsigned char>(x,y,z),
@@ -120,7 +134,7 @@ void Chunk::CalculateMesh()
 						1u
 						});
 				}
-				if (y == CHUNK_HEIGHT - 1 || m_ChunkData[x + (y+1) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
+				if (y == CHUNK_HEIGHT - offset || m_ChunkData[x + (y+offset) * CHUNK_SIZE + z * CHUNK_SIZE * CHUNK_HEIGHT] == 0) {
 					// Add up side.
 					m_VisibleFaces.push_back({
 						glm::tvec3<unsigned char>(x,y,z),
@@ -128,8 +142,8 @@ void Chunk::CalculateMesh()
 						1u
 						});
 				}
-				if ((z != 0 && m_ChunkData[x + y * CHUNK_SIZE + (z-1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) ||
-					(z == 0 && backward_c != nullptr && backward_c->m_ChunkData[x + y*CHUNK_SIZE + (CHUNK_SIZE - 1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0)) 
+				if ((z != 0 && m_ChunkData[x + y * CHUNK_SIZE + (z-offset) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) ||
+					(z == 0 && backward_c != nullptr && backward_c->m_ChunkData[x + y*CHUNK_SIZE + (CHUNK_SIZE - offset) * CHUNK_SIZE * CHUNK_HEIGHT] == 0)) 
 				{
 					// Add backward side.
 					m_VisibleFaces.push_back({
@@ -138,8 +152,8 @@ void Chunk::CalculateMesh()
 						1u
 						});
 				}
-				if ((z != CHUNK_SIZE - 1 && m_ChunkData[x + y * CHUNK_SIZE + (z+1) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) ||
-					(z == CHUNK_SIZE - 1 && forward_c != nullptr && forward_c->m_ChunkData[x + y*CHUNK_SIZE] == 0)) 
+				if ((z != CHUNK_SIZE - offset && m_ChunkData[x + y * CHUNK_SIZE + (z+offset) * CHUNK_SIZE * CHUNK_HEIGHT] == 0) ||
+					(z == CHUNK_SIZE - offset && forward_c != nullptr && forward_c->m_ChunkData[x + y*CHUNK_SIZE] == 0)) 
 				{
 					// Add forward side.
 					m_VisibleFaces.push_back({

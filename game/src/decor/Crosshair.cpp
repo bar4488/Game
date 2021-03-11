@@ -26,7 +26,7 @@ void Crosshair::Draw()
 	m_Renderer->DisableCap(GL_DEPTH_TEST);
 	Program* program = m_Renderer->GetProgramByName("crosshair");
 	program->Bind();
-	program->SetUniformMatrix4fv("view", 1, GL_FALSE, &crosshair_vp[0][0]);
+	program->SetUniform<glm::mat4>("view", crosshair_vp);
 	m_Renderer->DrawLines(VAO, 0, 6, 3.0f);
 	m_Renderer->EnableCap(GL_DEPTH_TEST);
 }

@@ -27,9 +27,9 @@ void Skybox::Draw()
 	glDepthFunc(GL_LEQUAL);
 	Program* skyboxProgram = m_Renderer->GetProgramByName("skybox");
 	skyboxProgram->Bind();
-	skyboxProgram->SetUniformMatrix4fv("VP", 1, GL_FALSE, &skybox_vp[0][0]);
-	skyboxProgram->SetUniform3f("lightDir", 0.2f, 1.0f, 0.7f);
-	skyboxProgram->SetUniform3f("lightColor", 0.8f, 0.8f, 0.0f);
+	skyboxProgram->SetUniform<glm::mat4>("VP", skybox_vp);
+	skyboxProgram->SetUniform<glm::vec3>("lightDir", glm::vec3(0.2f, 1.0f, 0.7f));
+	skyboxProgram->SetUniform<glm::vec3>("lightColor", glm::vec3(0.8f, 0.8f, 0.0f));
 	m_Renderer->DrawElements(VAO, IB);
 
 	glDepthFunc(GL_LESS);

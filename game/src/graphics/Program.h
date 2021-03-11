@@ -11,7 +11,7 @@
 #include <utility>
 #include "fstream"
 #include "iostream"
-#include "glm/vec3.hpp"
+#include "glm/glm.hpp"
 
 class Program {
 public:
@@ -28,14 +28,29 @@ public:
     void Unbind() const;
 
     bool CompileProgram();
-    void SetUniform1f(const std::string& name, float value);
-    void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
-    void SetUniform3f(const std::string& name, float v0, float v1, float v2);
-    void SetUniform1i(const std::string& name, int value);
-    void SetUniformVec3(const std::string& name, glm::vec3 v);
-    void SetUniformMatrix4fv(const std::string& name, unsigned int count, bool transpose, float* matrix);
+    template<typename T>
+    void SetUniform(const std::string& name, T value);
+
+    template<>
+    void SetUniform<int>(const std::string& name, int value);
+    template<>
+    void SetUniform<float>(const std::string& name, float value);
+    template<>
+    void SetUniform<glm::vec3>(const std::string& name, glm::vec3 value);
+    template<>
+    void SetUniform<glm::vec4>(const std::string& name, glm::vec4 value);
+    template<>
+    void SetUniform<unsigned int>(const std::string& name, unsigned int value);
+    template<>
+    void SetUniform<glm::mat4>(const std::string& name, glm::mat4 value);
     int GetUniformLocation(const std::string& name);
 private:
     const std::string m_FragmentPath;
     const std::string m_VertexPath;
 };
+
+template <typename T>
+void Program::SetUniform(const std::string& name, T value)
+{
+    std::cerr << "ERROR: use of set uniform function without a type!\n";
+}

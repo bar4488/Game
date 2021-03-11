@@ -28,8 +28,8 @@ void FreeType::RenderText(Font* font, std::string text, float scale, glm::vec2 p
 	Program* text_shader = m_renderer->GetProgramByName("text");
 	text_shader->Bind();
     glm::mat4 projection = m_renderer->GetOrthoProjection();
-	text_shader->SetUniformMatrix4fv("projection", 1, false, &projection[0][0]);
-	text_shader->SetUniformVec3("textColor", color);
+	text_shader->SetUniform<glm::mat4>("projection", projection);
+	text_shader->SetUniform<glm::vec3>("textColor", color);
     glActiveTexture(GL_TEXTURE0);
     VAO.Bind();
 

@@ -129,27 +129,39 @@ int Program::GetUniformLocation(const std::string& name) {
     return location;
 }
 
-void Program::SetUniform1f(const std::string &name, float value) {
+template <>
+void Program::SetUniform<int>(const std::string& name, int value)
+{
+    glUniform1i(GetUniformLocation(name), value);
+}
+
+template <>
+void Program::SetUniform<float>(const std::string& name, float value)
+{
     glUniform1f(GetUniformLocation(name), value);
 }
 
-void Program::SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3) {
-    glUniform4f(GetUniformLocation(name), v0, v1, v2, v3);
+template <>
+void Program::SetUniform<glm::vec3>(const std::string& name, glm::vec3 value)
+{
+    glUniform3f(GetUniformLocation(name), value.x, value.y, value.z);
 }
 
-void Program::SetUniform3f(const std::string &name, float v0, float v1, float v2) {
-    glUniform3f(GetUniformLocation(name), v0, v1, v2);
+template <>
+void Program::SetUniform<glm::vec4>(const std::string& name, glm::vec4 value)
+{
+    glUniform4f(GetUniformLocation(name), value.x, value.y, value.z, value.w);
 }
 
-void Program::SetUniformVec3(const std::string &name, glm::vec3 v) {
-    glUniform3f(GetUniformLocation(name), v.x, v.y, v.z);
+template <>
+void Program::SetUniform<unsigned>(const std::string& name, unsigned value)
+{
+    glUniform1ui(GetUniformLocation(name), value);
 }
 
-void Program::SetUniformMatrix4fv(const std::string &name, unsigned int count, bool transpose, float *matrix) {
-    glUniformMatrix4fv(GetUniformLocation(name), count, transpose, matrix);
-}
-
-void Program::SetUniform1i(const std::string &name, int value) {
-    glUniform1i(GetUniformLocation(name), value);
+template <>
+void Program::SetUniform<glm::mat4>(const std::string& name, glm::mat4 value)
+{
+    glUniformMatrix4fv(GetUniformLocation(name), 1, false, &value[0][0]);
 }
 

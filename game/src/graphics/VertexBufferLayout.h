@@ -36,34 +36,19 @@ public:
     }
 
     template<>
-    void Push<unsigned int>(unsigned int count, unsigned int location) {
-        m_Elements.push_back({GL_UNSIGNED_INT, count, location, false});
-        m_Stride += count * glutls::GetSizeOfType(GL_UNSIGNED_INT);
-    }
+    void Push<unsigned int>(unsigned int count, unsigned int location);
 
     template<>
-    void Push<float>(unsigned int count, unsigned int location) {
-        m_Elements.push_back({GL_FLOAT, count, location, false});
-        m_Stride += count * glutls::GetSizeOfType(GL_FLOAT);
-    }
+    void Push<float>(unsigned int count, unsigned int location);
 
     template<>
-    void Push<unsigned char>(unsigned int count, unsigned int location) {
-        m_Elements.push_back({GL_UNSIGNED_BYTE, count, location, false});
-        m_Stride += count * glutls::GetSizeOfType(GL_UNSIGNED_BYTE);
-    }
+    void Push<unsigned char>(unsigned int count, unsigned int location);
 
     template<>
-    void Push<char>(unsigned int count, unsigned int location) {
-        m_Elements.push_back({GL_BYTE, count, location, false});
-        m_Stride += count * glutls::GetSizeOfType(GL_BYTE);
-    }
+    void Push<char>(unsigned int count, unsigned int location);
 
     template<>
-    void Push<int>(unsigned int count, unsigned int location) {
-        m_Elements.push_back({GL_INT, count, location, false});
-        m_Stride += count * glutls::GetSizeOfType(GL_INT);
-    }
+    void Push<int>(unsigned int count, unsigned int location);
 
     inline std::vector<VertexBufferElement> GetElement() const { return m_Elements; }
     inline unsigned int GetStride() const { return m_Stride; }

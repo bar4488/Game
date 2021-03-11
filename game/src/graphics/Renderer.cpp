@@ -76,8 +76,9 @@ void Renderer::DrawCube(glm::vec3 position, glm::mat4 vp, glm::vec3 color)
 	m_CubeIB.Bind();
 	Program* program = GetProgramByName("cube");
 	program->Bind();
-	program->SetUniformVec3("u_color", color);
-	program->SetUniformMatrix4fv("MVP", 1, false, &mvp[0][0]);
+	program->SetUniform<glm::vec3>("u_color", color);
+	program->SetUniform<glm::mat4>("MVP", mvp);
+	glLineWidth(3);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, nullptr);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

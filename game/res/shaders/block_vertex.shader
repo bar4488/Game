@@ -8,6 +8,7 @@ struct vertex{
 
 uniform mat4 MVP;
 uniform mat4 M;
+uniform uint lod;
 
 out vertex v_out;
 
@@ -48,45 +49,45 @@ vertex computeVertex(int index) {
 		normal = vec3(0, 1, 0);
 		tex = vec2(1,0);
 		tex.xy += offset;
-		position += vec3(0, 1, 0);
-		position.zx += offset;
+		position += vec3(0, 1, 0) * pow(2, lod - 1);
+		position.zx += offset * pow(2, lod - 1);
 		break;
 	case 1:
 		//down
 		normal = vec3(0, -1, 0);
 		tex = vec2(2,0);
 		tex.yx += offset;
-		position.xz += offset;
+		position.xz += offset * pow(2, lod - 1);
 		break;
 	case 2:
 		//right
 		normal = vec3(1, 0, 0);
 		tex = vec2(0,0);
 		tex.yx += offset;
-		position += vec3(1, 0, 0);
-		position.yz += offset;
+		position += vec3(1, 0, 0) * pow(2, lod - 1);
+		position.yz += offset * pow(2, lod - 1);
 		break;
 	case 3:
 		//left
 		normal = vec3(-1, 0, 0);
 		tex = vec2(0,0);
 		tex.xy += offset;
-		position.zy += offset;
+		position.zy += offset * pow(2, lod - 1);
 		break;
 	case 4:
 		//forward
 		normal = vec3(0, 0, 1);
 		tex = vec2(0,0);
 		tex.xy += offset;
-		position += vec3(0, 0, 1);
-		position.xy += offset;
+		position += vec3(0, 0, 1) * pow(2, lod - 1);
+		position.xy += offset * pow(2, lod - 1);
 		break;
 	case 5:
 		//backward
 		normal = vec3(0, 0, -1);
 		tex = vec2(0,0);
 		tex.yx += offset;
-		position.yx += offset;
+		position.yx += offset * pow(2, lod - 1);
 		break;
 	}
 	tex.y *= 3;
