@@ -26,5 +26,5 @@ endmacro()
 
 ####################################################################################
 
-include("${CMAKE_CURRENT_LIST_DIR}/.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/FastNoise2Targets.cmake")
 check_required_components("FastNoise2")
